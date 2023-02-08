@@ -8,7 +8,7 @@ def check_directory_existence(directory):
     '''
     Helper function to check if a directory exists and to create the directory if it does not exist.
     
-    directory: string, file path of directory to check the existence of.
+    directory: str, file path of directory to check the existence of.
                All parent directories of target directory must exist.
     '''
     
@@ -29,7 +29,7 @@ def scrape_vectorstock(directory, start_page, end_page):
     '''
     Function to scrape vectorstock.com owl vector sketches.
     
-    directory: string, file path of directory to save images to.
+    directory: str, file path of directory to save images to.
     start_page: int, starting page to scrape from vectorstock website.
     end_page: int, ending page to scrape from vectorstock website.
     '''
@@ -78,11 +78,11 @@ def scrape_adobe(directory, start_page, end_page, subcategory_url_string, subcat
     '''
     Function to scrape stock.adobe.com owl sketches.
     
-    directory: string, file path of directory to save images to.
+    directory: str, file path of directory to save images to.
     start_page: int, starting page to scrape from vectorstock website.
     end_page: int, ending page to scrape from vectorstock website.
-    subcategory_url_string: string, denoting which subcategory of stock.adobe to scrape (found using filters on website).
-    subcategory_title: string, used to name the saved image files, preferably title-cased with no spaces.
+    subcategory_url_string: str, denoting which subcategory of stock.adobe to scrape (found using filters on website).
+    subcategory_title: str, used to name the saved image files, preferably title-cased with no spaces.
     '''
     
     # Set base url
@@ -137,11 +137,11 @@ def scrape_fineartamerica(directory, start_page, end_page, subcategory_url_strin
     '''
     Function to scrape fineartarmerica.com owl sketches.
     
-    directory: string, file path of directory to save images to.
+    directory: str, file path of directory to save images to.
     start_page: int, starting page to scrape from vectorstock website.
     end_page: int, ending page to scrape from vectorstock website.
-    subcategory_url_string: string, denoting which subcategory of fineartamerica.com to scrape.
-    subcategory_title: string, used to name the saved image files, preferably title-cased with no spaces.
+    subcategory_url_string: str, denoting which subcategory of fineartamerica.com to scrape.
+    subcategory_title: str, used to name the saved image files, preferably title-cased with no spaces.
     '''
     
     # Set base url
