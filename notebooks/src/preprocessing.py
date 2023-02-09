@@ -442,7 +442,7 @@ def select_images_and_sketches(sketch_directories, image_directories, log_files,
     
     # Find bad images by log file for each of the sketch directories.
     for index, log_file in enumerate(log_files):
-        print(f'Getting bad sketches for {} by log file')
+        print(f'Getting bad sketches for {log_file} by log file')
         
         # Convert to set for later use in set operations.
         bad_images_by_sketch = set(get_bad_sketches_by_df(log_file))
@@ -459,7 +459,7 @@ def select_images_and_sketches(sketch_directories, image_directories, log_files,
     
     # For each directory, copy the image files which are not labeled "bad" from that directory.
     for index, directory in enumerate(image_directories):
-        print(f'Copying images for {}')
+        print(f'Copying images for {directory}')
         
         # Get images from directory.
         images = sorted(os.listdir(directory))
@@ -708,6 +708,6 @@ def create_train_test_split(test_size = 0.25, random_state = 42):
         im1 = Image.open(f'../data/raw/actual_owls/resized/Owl_Resized_{index}.jpg')
         im2 = Image.open(f'../data/raw/actual_owls/sketched/resized/Owl_Sketched_Resized_{index}.jpg')
         im_concat = get_concat_h_cut(im1, im2)
-        im_concat.save(f'../data/train/Owl_Pair_{}.jpg')
+        im_concat.save(f'../data/train/Owl_Pair_{index}.jpg')
     
     return
