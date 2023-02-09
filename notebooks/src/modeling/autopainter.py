@@ -161,7 +161,7 @@ def fit_autopainter(train_ds, test_ds, epochs, generator, discriminator, gen_opt
     '''
     
     # Pull random image, sketch pair from test set to show model progress during training.
-    example_target, example_input = next(iter(test_ds.take(1)))
+    example_input, example_target = next(iter(test_ds.take(1)))
     
     start = time.time()
     epoch_range = range(starting_epoch, starting_epoch + epochs)
@@ -184,7 +184,7 @@ def fit_autopainter(train_ds, test_ds, epochs, generator, discriminator, gen_opt
         batch_size = 0
         
         # Train step.
-        for (target, sketch) in train_ds:
+        for (sketch, target) in train_ds:
             train_losses += train_step_autopainter(sketch, target, generator, discriminator,
                                                    gen_optimizer, discrim_optimizer, net)
             batch_size += 1

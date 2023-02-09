@@ -113,7 +113,7 @@ def fit_pix2pix(train_ds, test_ds, epochs, generator, discriminator,
     '''
 
     # Pull random image, sketch pair from test set to show model progress during training.
-    example_target, example_input = next(iter(test_ds.take(1)))
+    example_input, example_target = next(iter(test_ds.take(1)))
     
     start = time.time()
     epoch_range = range(starting_epoch, starting_epoch + epochs)
@@ -136,7 +136,7 @@ def fit_pix2pix(train_ds, test_ds, epochs, generator, discriminator,
         batch_size = 0
         
         # Train step.
-        for (target, sketch) in train_ds:
+        for (sketch, target) in train_ds:
             train_losses += train_step_pix2pix(sketch, target,
                                                generator, discriminator,
                                                gen_optimizer, discrim_optimizer, loss_obj)

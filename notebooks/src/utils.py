@@ -2,8 +2,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.keras import Model
 from keras.models import load_model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import BinaryCrossEntropy
+from tensorflow.keras.optimizers.legacy import Adam
+from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras.applications.vgg16 import VGG16
 import pickle
 
@@ -55,7 +55,7 @@ def generate_and_save_images(model, epoch, test_input, model_name, save = False,
     
     return
 
-def reload_model_from_epoch(epoch_dir, model_type):
+def reload_model_from_epoch(epoch_dir, model_type, base_path):
     components = []
     
     generator = load_model(f'{epoch_dir}/generator.h5')

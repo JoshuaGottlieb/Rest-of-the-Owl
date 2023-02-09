@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.io import read_file, decode_jpeg
 from tensorflow import cast, shape
 from tensorflow.image import resize, resize_with_pad, ResizeMethod
@@ -17,8 +18,8 @@ def load(image_file):
     w = w // 2
     
     # Split image and sketch
-    image = pair[:, w:, :]
-    sketch = pair[:, :w, :]
+    sketch = pair[:, w:, :]
+    image = pair[:, :w, :]
 
     # Convert both images to float32 tensors
     sketch = cast(sketch, tf.float32)
@@ -30,8 +31,8 @@ def resize(sketch, image, height, width):
     '''
     Resizes sketch and image with padding to specified height and width.
     
-    sketch: numpy array, representing the sketch information in array form.
-    image: numpy array, representing the image information in array form.
+    sketch: 3D tensor, representing the sketch information in tensor form.
+    image: 3D tensor, representing the image information in tensor form.
     height: int, representing the desired height in pixels.
     width: int, representing the desired width in pixels.
     '''
@@ -46,8 +47,8 @@ def normalize(sketch, image):
     '''
     Scales the images so that pixel values fall in [0, 1] instead of [0, 255].
     
-    sketch: numpy array, representing the sketch information in array form.
-    image: numpy array, representing the image information in array form.
+    sketch: 3D tensor, representing the sketch information in tensor form.
+    image: 3D tensor, representing the image information in tensor form.
     '''
     
     sketch_scaled = sketch / 255
