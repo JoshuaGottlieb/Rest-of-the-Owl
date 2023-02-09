@@ -181,12 +181,16 @@ def fit_autopainter(train_ds, test_ds, epochs, generator, discriminator, gen_opt
         
         # Initialize empty array for losses.
         train_losses = np.zeros(6)
+        batch_size = 0
         
         # Train step.
         for (target, sketch) in train_ds:
             train_losses += train_step_autopainter(sketch, target, generator, discriminator,
                                                    gen_optimizer, discrim_optimizer, net)
+            batch_size += 1
             
+        train_losses = train_losses / batch_size
+        
         if save:
             # Log losses
             with open(log_file, 'a') as f:

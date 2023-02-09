@@ -133,12 +133,16 @@ def fit_pix2pix(train_ds, test_ds, epochs, generator, discriminator,
         
         # Initialize empty array for losses.
         train_losses = np.zeros(4)
+        batch_size = 0
         
         # Train step.
         for (target, sketch) in train_ds:
             train_losses += train_step_pix2pix(sketch, target,
                                                generator, discriminator,
                                                gen_optimizer, discrim_optimizer, loss_obj)
+            batch_size += 1
+            
+        train_losses = train_losses / batch_size
 
         if save:
             # Log losses.
