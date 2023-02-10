@@ -27,36 +27,32 @@ def load(image_file):
 
     return sketch, image
 
-def resize(sketch, image, height, width):
+def resize(image, height, width):
     '''
     Resizes sketch and image with padding to specified height and width.
     
-    sketch: 3D tensor, representing the sketch information in tensor form.
     image: 3D tensor, representing the image information in tensor form.
     height: int, representing the desired height in pixels.
     width: int, representing the desired width in pixels.
     '''
     
-    sketch_resized = resize_with_pad(sketch, height, width, method = ResizeMethod.NEAREST_NEIGHBOR)
     image_resized = resize_with_pad(image, height, width, method = ResizeMethod.NEAREST_NEIGHBOR)
 
-    return sketch_resized, image_resized
+    return image_resized
 
 # Normalizing the images to [0, 1]
-def normalize(sketch, image):
+def normalize(image):
     '''
     Scales the images so that pixel values fall in [0, 1] instead of [0, 255].
     
-    sketch: 3D tensor, representing the sketch information in tensor form.
     image: 3D tensor, representing the image information in tensor form.
     '''
     
-    sketch_scaled = sketch / 255
     image_scaled = image / 255
 
-    return sketch_scaled, image_scaled
+    return image_scaled
 
-def load_image_and_sketch(image_file):
+def load_image_and_sketch(image_file, height = 256, width = 256):
     '''
     Loads a sketch/image pair from a file, performing resizing and scaling.
     
@@ -64,7 +60,9 @@ def load_image_and_sketch(image_file):
     '''
     
     sketch, image = load(image_file)
-    sketch, image = resize(sketch, image, 256, 256)
-    sketch, image = normalize(sketch, image)
+    sketch = resize(sketch, height, width)
+    sketch = normalize(sketch)
+    image = resize(image, height, width)
+    image = normalize(image)
 
     return sketch, image
