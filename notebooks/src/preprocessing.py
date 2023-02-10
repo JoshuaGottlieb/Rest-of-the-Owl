@@ -155,7 +155,9 @@ def dog(img, size = (0,0), k = 1.6, sigma = 0.5, gamma = 1):
     img1 = cv2.GaussianBlur(img, size, sigma)
     img2 = cv2.GaussianBlur(img, size, sigma * k)
     
-    return (img1 - gamma * img2)
+    diff = img1 - (gamma * img2)
+    
+    return img1, img2, diff
 
 def xdog_garygrossi(img, sigma = 0.5, k = 200, gamma = 0.98, epsilon = 0.1, phi = 10):
     '''
@@ -170,7 +172,7 @@ def xdog_garygrossi(img, sigma = 0.5, k = 200, gamma = 0.98, epsilon = 0.1, phi 
     phi: float, multiplier to apply to elements below epsilon threshold. Default 10.
     '''
     
-    aux = dog(img, sigma = sigma, k = k, gamma = gamma) / 255
+    aux = dog(img, sigma = sigma, k = k, gamma = gamma)[-1] / 255
     
     for i in range(0, aux.shape[0]):
         for j in range(0, aux.shape[1]):
