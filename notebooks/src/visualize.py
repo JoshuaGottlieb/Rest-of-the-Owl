@@ -1,0 +1,133 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as pltticker
+import seaborn as sns
+# import dataframe_image as dfi
+
+def configure_axislabels_and_title(x_label, y_label, title, ax,
+                                   axis_size = 24, title_size = 32,
+                                   axis_pad = 10, title_pad = 10, font_name = 'Arial'):
+    '''
+    Configure the axis and title labels of a matplotlib axis object.
+    
+    x_label: String to use for labeling the x-axis.
+    y_label: String to use for labeling the y-axis.
+    title: String to use for the title of the ax object.
+    ax: The matplotlib axis object to modify.
+    axis_size: Float representing the font size of the axis labels. Default 24.0.
+    title_size: Float representing the font size of the title. Default 32.0.
+    axis_pad: Float representing the padding between graph and axis labels. Default 10.0.
+    title_pad: Float representing the padding between graph and title. Default 10.0.
+    font_name: String representing the name of the font to use for all labels. Default Arial.
+    '''
+    
+    ax.set_xlabel(x_label, fontfamily = font_name, fontsize = axis_size, labelpad = axis_pad)
+    ax.set_ylabel(y_label, fontfamily = font_name, fontsize = axis_size, labelpad = axis_pad)
+    ax.set_title(title, fontfamily = font_name, fontsize = title_size, pad = title_pad)
+    
+    return
+
+
+
+# Configures ticklabels and tick parameters
+def configure_ticklabels_and_params(ax, label_size = 16, length = 8, width = 1, font_name = 'Arial',
+                                    x_label_size = None, x_length = None, x_width = None,
+                                    y_label_size = None, y_length = None, y_width = None,
+                                    format_xticks = False, x_ticks_rounding = 1, x_ticks_rotation = 0,
+                                    format_yticks = False, y_ticks_rounding = 1, y_ticks_rotation = 0):
+    '''
+    Configures the ticklabels and tick sizes of a matplotlib axis object.
+    
+    ax: Matplotlib axis object to format.
+    label_size: Float, the font size of the major tick labels. Default 16.
+    length: Float, the length of the major tick marks. Default 8.
+    width: Float, the width of the major tick marks. Default 1.
+    font_name: String, the font to use for tick labels. Default Arial.
+    x_label_size: Float, the font size of the major tick labels on the x-axis. By default inherits from label_size.
+    x_length: Float, the length of the major tick marks on the x-axis. By default inherits from length.
+    x_width: Float, the width of the major tick marks on the x-axis. By default inherits from width.
+    y_label_size: Float, the font size of the major tick labels on the y-axis. By default inherits from label_size.
+    y_length: Float, the length of the major tick marks on the y-axis. By default inherits from length.
+    y_width: Float, the width of the major tick marks on the y-axis. By default inherits from width.
+    format_xticks: Bool, indicates whether to format numerical x-tick labels. Default False.
+    x_ticks_rounding: Integer, the number by which to divide the x-tick labels (e.g. to round to 10s, set to 10). Default 1.
+    x_ticks_rotation: Integer, the number in degrees by which to rotate the x-tick labels counter-clockwise. Default 0.
+    format_yticks: Bool, indicates whether to format numerical y-tick labels. Default False.
+    y_ticks_rounding: Integer, the number by which to divide the y-tick labels (e.g. to round to 10s, set to 10). Default 1.
+    y_ticks_rotation: Integer, the number in degrees by which to rotate the y-tick labels counter-clockwise. Default 0.
+    '''
+    
+    # Set individual axis attributes
+    if x_label_size is None:
+        x_label_size = label_size
+    if y_label_size is None:
+        y_label_size = label_size
+    if x_length is None:
+        x_length = length
+    if y_length is None:
+        y_length = length
+    if x_width is None:
+        x_width = width
+    if y_width is None:
+        y_width = width
+    
+    # Set label sizes and tick lengths
+    ax.tick_params(axis = 'x', which = 'major', labelsize = x_label_size, length = x_length, width = x_width)
+    ax.tick_params(axis = 'y', which = 'major', labelsize = y_label_size, length = y_length, width = y_width)
+
+    # Set font for tick labels on both axes, format tick labels if numerical, rotate if needed
+    for tick in ax.get_xticklabels():
+        tick.set_fontname("Arial")
+        tick.set_rotation(x_ticks_rotation)
+        # Rounds tick values and adds commas where appropriate
+        if format_xticks:
+            ax.get_yaxis().set_major_formatter(pltticker.FuncFormatter(lambda x, p: format(int(x / x_ticks_rounding),',')))
+
+    for tick in ax.get_yticklabels():
+        tick.set_fontname("Arial")
+        tick.set_rotation(y_ticks_rotation)
+        # Rounds tick values and adds commas where appropriate
+        if format_yticks:
+            ax.get_yaxis().set_major_formatter(pltticker.FuncFormatter(lambda x, p: format(int(x / y_ticks_rounding),',')))
+        
+    return
+
+def configure_legend(ax, labels = None, loc = 0, bbox_to_anchor = None, labelcolor = 'black', fontsize = 12,
+                     frameon = False, facecolor = 'inherit', fancybox = False, framealpha = 0.8,
+                     edgecolor = 'inherit', borderpad = 0.4, labelspacing = 0.5):
+    '''
+    Configures the legend of a matplotlib axis object.
+    
+    ax: Matplotlib axis object to format.
+    labels: List of strings, to manually specify the labels to use for each artist. Default None uses automatic labeling.
+    loc: Integer, string, or pair of floats, specifies the location of the legend according to matplotlib documentation.
+         Default 0, equivalent to 'best'.
+    bbox_to_anchor: 2-tuple or 4-tuple of floats, specifies the location of the bounding box of the legend. Default None.
+    labelcolor: String or list of strings, specifies the color(s) of the labels. Default 'black'.
+    fontsize: Integer, specifies the fontsize of the labels. Default 12.
+    frameon: Bool, denotes whether the legend should be drawn on a patch (frame). Default False.
+    facecolor: 'inherit' or color, denotes the background color of the legend. If 'inherit', match the color of the axis.
+               Default 'inherit'.
+    fancybox: Bool, denotes whether the legend's background should have rounded edges. Default False.
+    framealpha: Float, denotes the alpha transparency of the legend's background. Default 0.8.
+    edgecolor: 'inherit' or color, denotes the legend's background edge color. If 'inherit', match the color of the axis.
+               Default 'inherit'.
+    borderpad: Float, denotes the fractional whitespace inside the legend border, in font-size units. Default 0.4.
+    labelspacing: Float, denotes the vertical space between the legend entries, in font-size units. Default 0.5.
+    '''
+    
+    # Extract handles for artists
+    handles = [i for i in ax.get_legend_handles_labels()][0]
+    
+    # If there is a bounding box, anchor to bounding box. Else draw legend using input parameters.
+    if bbox_to_anchor is not None:
+        ax.legend(handles = handles, labels = labels, loc = loc, bbox_to_anchor = None, labelcolor = labelcolor,
+                  frameon = frameon, facecolor = facecolor, fontsize = fontsize, fancybox = fancybox,
+                  framealpha = framealpha, borderpad = borderpad, labelspacing = labelspacing);
+    else:
+        ax.legend(handles = handles, labels = labels, loc = loc, labelcolor = labelcolor,
+                  frameon = frameon, facecolor = facecolor, fontsize = fontsize, fancybox = fancybox,
+                  framealpha = framealpha, borderpad = borderpad, labelspacing = labelspacing);
+    
+    return
