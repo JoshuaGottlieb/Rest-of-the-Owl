@@ -1,0 +1,30 @@
+\documentclass[border=8pt, multi, tikz]{standalone}
+%\usepackage{blocks}
+\usepackage{import}
+\subimport{../layers/}{init}
+\usetikzlibrary{positioning}
+
+\def\DeconvColor{rgb:blue,2;green,1;black,0.3}
+\def\ReluColor{rgb:yellow,5;red,5}
+\def\BatchNormColor{rgb:black,0.4}
+\def\DropoutColor{rgb:red,3;white,4}
+
+\begin{document}
+\begin{tikzpicture}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Upsampler
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% batch_norm, drop_out, relu
+\pic[shift={(0,0,0)}] at (0,0,0) {Box={name=bn, xlabel={{"Batch Norm",}},%
+        fill=\BatchNormColor,opacity=0.6, height=20, width=1, depth=20}};
+\pic[shift={(2,0,0)}] at (bn-west) {Box={name=dp, xlabel={{"Dropout",}},%
+        fill=\DropoutColor,opacity=0.6,height=20,width=1,depth=20}};
+\pic[shift={(2,0,0)}] at (dp-west) {Box={name=re, xlabel={{"ReLU",}},%
+        fill=\ReluColor,opacity=0.6,height=20,width=1,depth=20}};
+% conv2dtranspose_6
+\pic[shift={(2,0,0)}] at (re-east) {Box={name=up,%
+        xlabel={{"Conv2D Transpose",}}, fill=\DeconvColor,opacity=0.6,height=20,width=3,depth=20}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{tikzpicture}
+\end{document}

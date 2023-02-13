@@ -1,0 +1,234 @@
+\documentclass[border=8pt, multi, tikz]{standalone}
+%\usepackage{blocks}
+\usepackage{import}
+\subimport{../layers/}{init}
+\usetikzlibrary{positioning}
+
+\def\ConvColor{rgb:red,1;black,0.3}
+\def\DeconvColor{rgb:blue,2;green,1;black,0.3}
+\def\LeakyReluColor{rgb:yellow,1;black,0.3}
+\def\ReluColor{rgb:yellow,5;red,5}
+\def\ConcatColor{rgb:blue,5;red,2.5;white,5}
+\def\BatchNormColor{rgb:black,0.4}
+\def\DropoutColor{rgb:red,3;white,4}
+\def\TanhColor{rgb:magenta,5;black,7}
+
+
+\newcommand{\copymidarrow}{\tikz \draw[-Stealth,line width =0.8mm,draw={rgb:blue,4;red,1;green,1;black,3}] (-0.3,0) -- ++(0.3,0);}
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:yellow,5;white,2},opacity=0.7]
+\tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw Encoder
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% downsample_1, conv2d_1
+\pic[shift={(0,0,0)}] at (0,0,0) {Box={name=down1,%
+        xlabel={{"64",}},caption=I,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=30,width={0.5},depth=30}};
+% downsample_1, leaky_relu_1
+\pic[shift={(0.5,-2.5,0)}] at (down1-east) {Box={name=lr1,%
+        fill=\LeakyReluColor,opacity=0.6,height=26,width=1,depth=26}};
+%%%%%%%%%%
+% downsample_2, conv2d_2
+\pic[shift={(0,0,0)}] at (lr1-east) {Box={name=down2,%
+        xlabel={{"128",}},caption=I/2,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=26,width={1},depth=26}};
+% downsample_2, batch_norm_1, leaky_relu_2
+\pic[shift={(0.5,-2.25,0)}] at (down2-east) {Box={name=bn1,%
+        fill=\BatchNormColor,opacity=0.6, height=22, width=1, depth=22}};
+\pic[shift={(0,0,0)}] at (bn1-east) {Box={name=lr2,%
+        fill=\LeakyReluColor,opacity=0.6,height=22,width=1,depth=22}};
+%%%%%%%%%%
+% downsample_3, conv2d_3
+\pic[shift={(0,0,0)}] at (lr2-east) {Box={name=down3,%
+        xlabel={{"256",}},caption=I/4,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=22,width={1.5},depth=22}};
+% downsample_3, batch_norm_2, leaky_relu_3
+\pic[shift={(0.5,-2,0)}] at (down3-east) {Box={name=bn2,%
+        fill=\BatchNormColor,opacity=0.6, height=18, width=1, depth=18}};
+\pic[shift={(0,0,0)}] at (bn2-east) {Box={name=lr3,%
+        fill=\LeakyReluColor,opacity=0.6,height=18,width=1,depth=18}};
+%%%%%%%%%%
+% downsample_4, conv2d_4
+\pic[shift={(0,0,0)}] at (lr3-east) {Box={name=down4,%
+        xlabel={{"512",}},caption=I/8,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=18,width={2},depth=18}};
+% downsample_4, batch_norm_3, leaky_relu_4
+\pic[shift={(0.5,-1.75,0)}] at (down4-east) {Box={name=bn3,%
+        fill=\BatchNormColor,opacity=0.6, height=14, width=1, depth=14}};
+\pic[shift={(0,0,0)}] at (bn3-east) {Box={name=lr4,%
+        fill=\LeakyReluColor,opacity=0.6,height=14,width=1,depth=14}};
+%%%%%%%%%%
+% downsample_5, conv2d_5
+\pic[shift={(0,0,0)}] at (lr4-east) {Box={name=down5,%
+        xlabel={{"512",}},caption=I/16,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=14,width={2.5},depth=14}};
+% downsample_5, batch_norm_4, leaky_relu_5
+\pic[shift={(0.5,-1.5,0)}] at (down5-east) {Box={name=bn4,%
+        fill=\BatchNormColor,opacity=0.6, height=10, width=1, depth=10}};
+\pic[shift={(0,0,0)}] at (bn4-east) {Box={name=lr5,%
+        fill=\LeakyReluColor,opacity=0.6,height=10,width=1,depth=10}};
+%%%%%%%%%%
+% downsample_6, conv2d_6
+\pic[shift={(0,0,0)}] at (lr5-east) {Box={name=down6,%
+        xlabel={{"512",}},caption=I/64,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=10,width={3},depth=10}};
+% downsample_6, batch_norm_5, leaky_relu_6
+\pic[shift={(0.25,-1.25,0)}] at (down6-east) {Box={name=bn5,%
+        fill=\BatchNormColor,opacity=0.6, height=6, width=1, depth=6}};
+\pic[shift={(0,0,0)}] at (bn5-east) {Box={name=lr6,%
+        fill=\LeakyReluColor,opacity=0.6,height=6,width=1,depth=6}};
+%%%%%%%%%%
+% downsample_7, conv2d_7
+\pic[shift={(0,0,0)}] at (lr6-east) {Box={name=down7,%
+        xlabel={{"512",}},caption=I/128,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=6,width={3.5},depth=6}};
+% downsample_7, batch_norm_6, leaky_relu_7
+\pic[shift={(0.25,-1,0)}] at (down7-east) {Box={name=bn6,%
+        fill=\BatchNormColor,opacity=0.6, height=4, width=1, depth=4}};
+\pic[shift={(0,0,0)}] at (bn6-east) {Box={name=lr7,%
+        fill=\LeakyReluColor,opacity=0.6,height=4,width=1,depth=4}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Bottleneck
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% downsample_8, conv2d_8
+\pic[shift={(0,0,0)}] at (lr7-east) {Box={name=down8,caption=I/256,%
+        xlabel={{"512",}},fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        height=4,width={4},depth=4}};
+% downsample_8, batch_norm_7, leaky_relu_8
+\pic[shift={(0,0,0)}] at (down8-east) {Box={name=bn7,%
+        fill=\BatchNormColor,opacity=0.6, height=5, width=1, depth=5}};
+\pic[shift={(0,0,0)}] at (bn7-east) {Box={name=lr8,%
+        fill=\LeakyReluColor,opacity=0.6,height=5,width=1,depth=5}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw Decoder 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% upsample 7, conv2dtranspose_7, concat_7
+\pic[shift={(0,0,0)}] at (lr8-east) {Box={name=up7, caption=I/128,%
+        xlabel={{"512",}}, fill=\DeconvColor,opacity=0.6,height=5,width={3.5},depth=5}};
+\pic[shift={(0,1,0)}] at (up7-anchor) {Ball={name=cat7,fill=\ConcatColor,radius=0.9,logo=$||$}};    
+% upsample 7, batch_norm_8, drop_out_1, relu_7
+\pic[shift={(0.75,1,0)}] at (up7-east) {Box={name=bn8,%
+        fill=\BatchNormColor,opacity=0.6, height=7, width=1, depth=7}};
+\pic[shift={(0,0,0)}] at (bn8-east) {Box={name=dp1,%
+        fill=\DropoutColor,opacity=0.6,height=7,width=1,depth=7}};
+\pic[shift={(0,0,0)}] at (dp1-east) {Box={name=re7,%
+        fill=\ReluColor,opacity=0.6,height=7,width=1,depth=7}};
+% upsample 6, conv2dtranspose_6, concat_6
+\pic[shift={(0,0,0)}] at (re7-east) {Box={name=up6, caption=I/64,%
+        xlabel={{"512",}}, fill=\DeconvColor,opacity=0.6,height=7,width=3,depth=7}};
+\pic[shift={(0,1.25,0)}] at (up6-anchor) {Ball={name=cat6,fill=\ConcatColor,radius=0.9,logo=$||$}};    
+% upsample 6, batch_norm_9, drop_out_2, relu_6
+\pic[shift={(0.75,1.25,0)}] at (up6-east) {Box={name=bn9,%
+        fill=\BatchNormColor,opacity=0.6, height=9, width=1, depth=9}};
+\pic[shift={(0,0,0)}] at (bn9-east) {Box={name=dp2,%
+        fill=\DropoutColor,opacity=0.6,height=9,width=1,depth=9}};
+\pic[shift={(0,0,0)}] at (dp2-east) {Box={name=re6,%
+        fill=\ReluColor,opacity=0.6,height=9,width=1,depth=9}};
+% upsample 5, conv2dtranspose_5, concat_5
+\pic[shift={(0,0,0)}] at (re6-east) {Box={name=up5, caption=I/32,%
+        xlabel={{"512",}}, fill=\DeconvColor,opacity=0.6,height=9,width=2.5,depth=9}};
+\pic[shift={(0,1.5,0)}] at (up5-anchor) {Ball={name=cat5,fill=\ConcatColor,radius=0.9,logo=$||$}};    
+% upsample 5, batch_norm_10, drop_out_3, relu_5
+\pic[shift={(0.9,1.5,0)}] at (up5-east) {Box={name=bn10,%
+        fill=\BatchNormColor,opacity=0.6, height=11, width=1, depth=11}};
+\pic[shift={(0,0,0)}] at (bn10-east) {Box={name=dp3,%
+        fill=\DropoutColor,opacity=0.6,height=11, width=1,depth=11}};
+\pic[shift={(0,0,0)}] at (dp3-east) {Box={name=re5,%
+        fill=\ReluColor,opacity=0.6,height=11,width=1,depth=11}};
+% upsample 4, conv2dtranspose_4, concat_4
+\pic[shift={(0,0,0)}] at (re5-east) {Box={name=up4, caption=I/16,%
+        xlabel={{"512",}}, fill=\DeconvColor,opacity=0.6,height=11,width=2,depth=11}};
+\pic[shift={(0,1.75,0)}] at (up4-anchor) {Ball={name=cat4,fill=\ConcatColor,radius=0.9,logo=$||$}};    
+% upsample 4, batch_norm_11, relu_4
+\pic[shift={(1.1,1.75,0)}] at (up4-east) {Box={name=bn11,%
+        fill=\BatchNormColor,opacity=0.6, height=13, width=1, depth=13}};
+\pic[shift={(0,0,0)}] at (bn11-east) {Box={name=re4,%
+        fill=\ReluColor,opacity=0.6,height=13,width=1,depth=13}};
+% upsample 3, conv2dtranspose_3, concat_3
+\pic[shift={(0,0,0)}] at (re4-east) {Box={name=up3, caption=I/8,%
+        xlabel={{"256",}}, fill=\DeconvColor,opacity=0.6,height=13,width=1.5,depth=13}};
+\pic[shift={(0,2,0)}] at (up3-anchor) {Ball={name=cat3,fill=\ConcatColor,radius=0.9,logo=$||$}};    
+% upsample 3, batch_norm_12, relu_3
+\pic[shift={(1.3,2,0)}] at (up3-east) {Box={name=bn12,%
+        fill=\BatchNormColor,opacity=0.6, height=15, width=1, depth=15}};
+\pic[shift={(0,0,0)}] at (bn12-east) {Box={name=re3,%
+        fill=\ReluColor,opacity=0.6,height=15,width=1,depth=15}};
+% upsample 2, conv2dtranspose_2, concat_2
+\pic[shift={(0,0,0)}] at (re3-east) {Box={name=up2, caption=I/4,%
+        xlabel={{"128",}}, fill=\DeconvColor,opacity=0.6,height=15,width=1,depth=15}};
+\pic[shift={(0,2.25,0)}] at (up2-anchor) {Ball={name=cat2,fill=\ConcatColor,radius=0.9,logo=$||$}};    
+% upsample 2, batch_norm_13, relu_2
+\pic[shift={(1.5,2.25,0)}] at (up2-east) {Box={name=bn13,%
+        fill=\BatchNormColor,opacity=0.6, height=17, width=1, depth=17}};
+\pic[shift={(0,0,0)}] at (bn13-east) {Box={name=re2,%
+        fill=\ReluColor,opacity=0.6,height=17,width=1,depth=17}};
+% upsample 1, conv2dtranspose_1, concat_1
+\pic[shift={(0,0,0)}] at (re2-east) {Box={name=up1, caption=I/2,%
+        xlabel={{"64",}}, fill=\DeconvColor,opacity=0.6,height=17,width=1,depth=17}};
+\pic[shift={(0,2.5,0)}] at (up1-anchor) {Ball={name=cat1,fill=\ConcatColor,radius=0.9,logo=$||$}};    
+% upsample 1, batch_norm_14, relu_1
+\pic[shift={(2.1,2.5,0)}] at (up1-east) {Box={name=bn14,%
+        fill=\BatchNormColor,opacity=0.6, height=30, width=1, depth=30}};
+\pic[shift={(0,0,0)}] at (bn14-east) {Box={name=re1,%
+        fill=\ReluColor,opacity=0.6,height=30,width=1,depth=30}};
+
+% Final layer
+\pic[shift={(0,0,0)}] at (re1-east) {Box={name=final, caption=I,%
+        xlabel={{"1",}}, fill=\DeconvColor,opacity=0.6,height=30,width=1,depth=30}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Classifier 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pic[shift={(2,0,0)}] at (final-east) {Box={name=out,caption=Tanh,%
+        zlabel=I,fill=\TanhColor,height=30,width=1,depth=30}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Draw connections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\path (down1-east) -- (lr1-west|-down1-west) coordinate[pos=0.5] (downlr1-mid) ;
+\path (down2-east) -- (lr2-west|-down2-west) coordinate[pos=0.5] (downlr2-mid) ;
+\path (down3-east) -- (lr3-west|-down3-west) coordinate[pos=0.5] (downlr3-mid) ;
+\path (down4-east) -- (lr4-west|-down4-west) coordinate[pos=0.5] (downlr4-mid) ;
+\path (down5-east) -- (lr5-west|-down5-west) coordinate[pos=0.5] (downlr5-mid) ;
+\path (down6-east) -- (lr6-west|-down6-west) coordinate[pos=0.5] (downlr6-mid) ;
+\path (down7-east) -- (lr7-west|-down7-west) coordinate[pos=0.5] (downlr7-mid) ;
+\path (down8-east) -- (lr8-west|-down8-west) coordinate[pos=0.5] (downlr8-mid) ;
+
+\draw[connection](down1-east)--node{\midarrow}(downlr1-mid)--node{}(lr1-west-|downlr1-mid)--node{\midarrow}(lr1-west);
+\draw[connection](down2-east)--node{\midarrow}(downlr2-mid)--node{}(lr2-west-|downlr2-mid)--node{\midarrow}(lr2-west);
+\draw[connection](down3-east)--node{\midarrow}(downlr3-mid)--node{}(lr3-west-|downlr3-mid)--node{\midarrow}(lr3-west);
+\draw[connection](down4-east)--node{\midarrow}(downlr4-mid)--node{}(lr4-west-|downlr4-mid)--node{\midarrow}(lr4-west);
+\draw[connection](down5-east)--node{\midarrow}(downlr5-mid)--node{}(lr5-west-|downlr5-mid)--node{\midarrow}(lr5-west);
+\draw[connection](down6-east)--node{\midarrow}(downlr6-mid)--node{}(lr6-west-|downlr6-mid)--node{\midarrow}(lr6-west);
+\draw[connection](down7-east)--node{\midarrow}(downlr7-mid)--node{}(lr7-west-|downlr7-mid)--node{\midarrow}(lr7-west);
+\draw[connection](down8-east)--node{}(downlr8-mid)--node{}(lr8-west-|downlr8-mid)--node{\midarrow}(lr8-west);
+
+\draw [connection]  (final-east) -- node {\midarrow} (out-west);
+
+\draw [copyconnection]  (down7-east)  -- node {\copymidarrow} (cat7-west);
+\draw [copyconnection]  (down6-east)  -- node {\copymidarrow} (cat6-west);
+\draw [copyconnection]  (down5-east)  -- node {\copymidarrow} (cat5-west);
+\draw [copyconnection]  (down4-east)  -- node {\copymidarrow} (cat4-west);
+\draw [copyconnection]  (down3-east)  -- node {\copymidarrow} (cat3-west);
+\draw [copyconnection]  (down2-east)  -- node {\copymidarrow} (cat2-west);
+\draw [copyconnection]  (down1-east)  -- node {\copymidarrow} (cat1-west);
+
+\draw [copyconnection]  (cat7-east)  -- node {\copymidarrow} (up6-west);
+\draw [copyconnection]  (cat6-east)  -- node {\copymidarrow} (up5-west);
+\draw [copyconnection]  (cat5-east)  -- node {\copymidarrow} (up4-west);
+\draw [copyconnection]  (cat4-east)  -- node {\copymidarrow} (up3-west);
+\draw [copyconnection]  (cat3-east)  -- node {\copymidarrow} (up2-west);
+\draw [copyconnection]  (cat2-east)  -- node {\copymidarrow} (up1-west);
+\draw [copyconnection]  (cat1-east)  -- node {\copymidarrow} (final-west);
+
+\draw [copyconnection]  (up7-north)  -- node {\copymidarrow} (cat7-south);
+\draw [copyconnection]  (up6-north)  -- node {\copymidarrow} (cat6-south);
+\draw [copyconnection]  (up5-north)  -- node {\copymidarrow} (cat5-south);
+\draw [copyconnection]  (up4-north)  -- node {\copymidarrow} (cat4-south);
+\draw [copyconnection]  (up3-north)  -- node {\copymidarrow} (cat3-south);
+\draw [copyconnection]  (up2-north)  -- node {\copymidarrow} (cat2-south);
+\draw [copyconnection]  (up1-north)  -- node {\copymidarrow} (cat1-south);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{tikzpicture}
+\end{document}
