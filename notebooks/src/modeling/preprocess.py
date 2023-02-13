@@ -1,7 +1,4 @@
 import tensorflow as tf
-from tensorflow.io import read_file, decode_jpeg
-from tensorflow import cast, shape
-from tensorflow.image import resize, resize_with_pad, ResizeMethod
 
 def load(image_file):
     '''
@@ -11,10 +8,10 @@ def load(image_file):
     '''
     
     # Read and decode an image file to a uint8 tensor
-    pair = read_file(image_file)
-    pair = decode_jpeg(pair)
+    pair = tf.io.read_file(image_file)
+    pair = tf.io.decode_jpeg(pair)
     
-    w = shape(pair)[1]
+    w = tf.shape(pair)[1]
     w = w // 2
     
     # Split image and sketch
@@ -22,8 +19,8 @@ def load(image_file):
     image = pair[:, :w, :]
 
     # Convert both images to float32 tensors
-    sketch = cast(sketch, tf.float32)
-    image = cast(image, tf.float32)
+    sketch = tf.cast(sketch, tf.float32)
+    image = tf.cast(image, tf.float32)
 
     return sketch, image
 
@@ -36,7 +33,7 @@ def resize(image, height, width):
     width: int, representing the desired width in pixels.
     '''
     
-    image_resized = resize_with_pad(image, height, width, method = ResizeMethod.NEAREST_NEIGHBOR)
+    image_resized = tf.image.resize_with_pad(image, height, width, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
     return image_resized
 

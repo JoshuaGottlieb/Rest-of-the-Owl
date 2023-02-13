@@ -1,8 +1,10 @@
-import numpy as np
 import tensorflow as tf
+import numpy as np
+import pandas as pd
 from PIL import Image
 import re
-import pandas as pd
+import os
+from .. import utils
 
 def split_pair(pair):
     pair_arr = np.array(pair)
@@ -68,3 +70,41 @@ def generate_and_save_image(image_path, generator, end_dir, epoch, model, save =
         print(f'{image_name} saved to {end_dir}')
     
     return prediction_image
+
+def generate_images_from_dataset_epochs(datasets, models, epochs, base_path = '..', save = False):
+    
+    prediction_images = []
+    
+    for dataset in datasets:
+        print(f'Generating images from {dataset}.')
+        data = os.listdir(f'{base_path}/data/{dataset}')
+        for model in models:
+            print(f'Generating images using {model}.')
+            for epoch in epochs:
+                print(f'Generating images using epoch {epoch}.')
+                epoch_dir = f'{base_path}/models/{model}/epoch_{epoch:03d}'
+                generator = utils.reload_model_from_epoch(epoch_dir, model, base_path)[0]
+
+                for image in data:
+                    print(f'Generating image for {image}.')
+                    end_dir = f'{base_path}/data/generated/{dataset}/{model}/epoch_{epoch}'
+                    image_path = f'{base_path}/data/{dataset}/{image}'
+                    prediction_images.append(generate_and_save_image(image_path, generator,
+                                                                     end_dir, epoch, model, save = save))
+
+    return prediction_images
+
+def generate_images_from_epochs(images, models, epochs, base_path = '..', save = False):
+
+    generated_images = []
+    
+    for epoch in epochs:
+        for model in models:
+            generator = utils.reload_model_from_epoch(f'../models/{model}/epoch_{epoch:03d}/', model, '..')[0]
+            for image in images:
+                generated_images.append((f'{image[:-9]}_{model}_{epoch:03d}.jpg',
+                                         generate_and_save_image(f'../visualizations/non_owls/{image}',
+                                                                 generator, '../visualizations/non_owls/',
+                                                                 '', model, save = False)))
+                
+    return generated_images

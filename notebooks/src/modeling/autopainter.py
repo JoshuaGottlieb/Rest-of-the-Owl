@@ -2,14 +2,12 @@ import tensorflow as tf
 from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import Adam
+import numpy as np
 import time
 from IPython import display
-import numpy as np
-from tf.data import Dataset
 from tensorflow.keras.applications.vgg16 import VGG16
 from keras.applications.vgg16 import preprocess_input
-from .utils import generate_images
-from tensorflow import cast
+from ..utils import generate_images
 
 def sum_tv_loss(image):
     '''
@@ -40,7 +38,7 @@ def feature_loss(image, vgg):
     img = tf.reshape(image, [image.shape[-3], image.shape[-2], image.shape[-1]])
     img = tf.image.grayscale_to_rgb(img)
     img = tf.image.resize(img, (224, 224))
-    img = expand_dims(img, axis = 0)
+    img = tf.expand_dims(img, axis = 0)
     img = preprocess_input(img)
     
     # Extract feature maps

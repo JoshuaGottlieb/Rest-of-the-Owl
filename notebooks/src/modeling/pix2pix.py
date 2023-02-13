@@ -2,11 +2,10 @@ import tensorflow as tf
 from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import Adam
+import numpy as np
 import time
 from IPython import display
-import numpy as np
-from tf.data import Dataset
-from .utils import generate_images
+from ..utils import generate_images
 
 def generator_loss_pix2pix(disc_generated_output, gen_output, target, loss_object):
     '''

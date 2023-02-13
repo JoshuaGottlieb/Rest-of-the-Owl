@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tf import random_normal_initializer
 from tensorflow.keras import Input, Model, Sequential
 from tensorflow.keras.layers import Conv2D, Conv2DTranspose, BatchNormalization, Dropout
 from tensorflow.keras.layers import LeakyReLU, ReLU, Concatenate
@@ -14,7 +13,7 @@ def downsample(filters, size, strides, apply_batchnorm = True):
     apply_batchnorm: bool, whether to apply BatchNormalization in downsampler. Default True.
     '''
     
-    initializer = random_normal_initializer(0., 0.02)
+    initializer = tf.random_normal_initializer(0., 0.02)
     
     # Make sequential model.
     result = Sequential()
@@ -43,7 +42,7 @@ def upsample(filters, size, strides, apply_dropout = False):
     apply_dropout: bool, whether to apply Dropout in upsampler. Default False.
     '''
     
-    initializer = random_normal_initializer(0., 0.02)
+    initializer = tf.random_normal_initializer(0., 0.02)
 
     # Make sequential model.
     result = Sequential()
@@ -98,7 +97,7 @@ def create_generator():
     ]
     
     # Last layer.
-    initializer = random_normal_initializer(0., 0.02)
+    initializer = tf.random_normal_initializer(0., 0.02)
     last = Conv2DTranspose(1, 4, strides = 2, padding = 'same', kernel_initializer = initializer, activation = 'tanh')
     
     x = inputs
@@ -125,14 +124,14 @@ def create_discriminator():
     Creates a discriminator.
     '''
     
-    initializer = random_normal_initializer(0., 0.02)
+    initializer = tf.random_normal_initializer(0., 0.02)
 
     # Define inputs.
     inp = Input(shape = [256, 256, 1], name = 'sketch')
     tar = Input(shape = [256, 256, 1], name = 'target')
 
     # Concatenate inputs.
-    x = Concatenate([inp, tar])
+    x = Concatenate()([inp, tar])
 
     # Downsampling.
     down1 = downsample(64, 4, 2, False)(x)

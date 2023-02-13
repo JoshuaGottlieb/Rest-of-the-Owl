@@ -715,3 +715,13 @@ def create_train_test_split(test_size = 0.25, random_state = 42):
         im_concat.save(f'../data/train/Owl_Pair_{index}.jpg')
     
     return
+
+def preprocess_and_create_sketch(image_file, fill_space_threshold = 0.03):
+    image = Image.open(image_file).convert('L')
+    sketch = find_sketch_threshold(image, fill_space_threshold = fill_space_threshold)[0]
+    image = resize_image(image, (256, 256))
+    sketch = resize_image(sketch, (256, 256))
+    
+    pair = get_concat_h_cut(image, sketch)
+    
+    return pair
