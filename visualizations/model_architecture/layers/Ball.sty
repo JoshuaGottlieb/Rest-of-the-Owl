@@ -16,6 +16,10 @@
 \coordinate (\name-west)   at (-\r, 0  , 0) ;
 \coordinate (\name-north)  at ( 0 , \r , 0) ;
 \coordinate (\name-south)  at ( 0 , -\r, 0) ;
+\coordinate (\name-southwest) at ( -\r, -\r, 0);
+\coordinate (\name-southeast) at ( \r, -\r, 0);
+\coordinate (\name-northwest) at ( -\r, \r, 0);
+\coordinate (\name-northeast) at ( \r, \r, 0);
 
 \path (\name-south) + (0,-20pt) coordinate (caption-node) 
 edge ["\textcolor{black}{\bf \caption}"'] (caption-node); %Ball caption

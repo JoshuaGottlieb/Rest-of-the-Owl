@@ -17,11 +17,11 @@
 % batch_norm, leaky_relu
 \pic[shift={(0,0,0)}] at (0,0,0) {Box={name=bn,xlabel={"Batch Norm",},%
         fill=\BatchNormColor,opacity=0.6, height=20, width=1, depth=20}};
-\pic[shift={(3,0,0)}] at (bn-east) {Box={name=lr,xlabel={"Leaky ReLU",},%
+\pic[shift={(2,0,0)}] at (bn-east) {Box={name=lr,xlabel={"Leaky ReLU",},%
         fill=\LeakyReluColor,opacity=0.6,height=20,width=1,depth=20}};
 %%%%%%%%%%
 % downsample
-\pic[shift={(3,0,0)}] at (lr-east) {Box={name=down,%
+\pic[shift={(2,0,0)}] at (lr-east) {Box={name=down,%
         xlabel={{"Conv2D",}},fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
         height=20,width={3},depth=20}};
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

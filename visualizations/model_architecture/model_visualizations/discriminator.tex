@@ -1,0 +1,135 @@
+\documentclass[border=8pt, multi, tikz, margin=1cm]{standalone}
+%\usepackage{blocks}
+\usepackage{import}
+\subimport{../layers/}{init}
+\usetikzlibrary{positioning}
+
+\def\InputColor{rgb:white,0.3;black,0.3}
+\def\ConvColor{rgb:red,1;black,0.3}
+\def\DeconvColor{rgb:blue,2;green,1;black,0.3}
+\def\LeakyReluColor{rgb:yellow,1;black,0.3}
+\def\ReluColor{rgb:yellow,5;red,5}
+\def\ConcatColor{rgb:blue,5;red,2.5;white,5}
+\def\BatchNormColor{rgb:black,0.4}
+\def\DropoutColor{rgb:red,3;white,4}
+\def\TanhColor{rgb:magenta,5;black,7}
+
+
+\newcommand{\copymidarrow}{\tikz \draw[-Stealth,line width =0.8mm,draw={rgb:blue,4;red,1;green,1;black,3}] (-0.3,0) -- ++(0.3,0);}
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:yellow,5;white,2},opacity=0.7]
+\tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Input Layers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input Boxes
+\pic[shift={(0,0,0)}] at (0,0,0) {Box={name=input1,%
+        xlabel={{"",}},zlabel={Sketch},fill=\InputColor,%
+        height=20,width={0.5},depth=20}};
+\pic[shift={(0,-3,0)}] at (input1-south) {Box={name=input2,%
+        xlabel={{"",}},zlabel={Generated},fill=\InputColor,%
+        height=20,width={0.5},depth=20}};
+% Concatenate
+\path (input1-anchor) -- (input2-anchor) coordinate[pos=0.5] (inputs-mid) ;
+%\path [shift={(0,-2.5,0)}] at (input1-south) {name=inputs-mid};
+\pic[shift={(2,0,0)}] at (inputs-mid) {Ball={name=cat,fill=\ConcatColor,radius=1.5,logo=$||$}};    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw Encoder
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% downsample_1, conv2d_1
+\pic[shift={(1.5,0,0)}] at (cat-east) {Box={name=down1,%
+        xlabel={{"64",}},caption=I,fill=\ConvColor,%
+        height=20,width={0.5},depth=20}};
+% downsample_1, leaky_relu_1
+\pic[shift={(1.5,0,0)}] at (down1-east) {Box={name=lr1,%
+        fill=\LeakyReluColor,opacity=0.6,height=16,width=1,depth=16}};
+%%%%%%%%%%
+% downsample_2, conv2d_2
+\pic[shift={(0,0,0)}] at (lr1-east) {Box={name=down2,%
+        xlabel={{"128",}},caption=I/2,fill=\ConvColor,%
+        height=16,width={1},depth=16}};
+% downsample_2, batch_norm_1, leaky_relu_2
+\pic[shift={(1.5,0,0)}] at (down2-east) {Box={name=bn1,%
+        fill=\BatchNormColor,opacity=0.6, height=12, width=1, depth=12}};
+\pic[shift={(0,0,0)}] at (bn1-east) {Box={name=lr2,%
+        fill=\LeakyReluColor,opacity=0.6,height=12,width=1,depth=12}};
+%%%%%%%%%%
+% downsample_3, conv2d_3
+\pic[shift={(0,0,0)}] at (lr2-east) {Box={name=down3,%
+        xlabel={{"256",}},caption=I/4,fill=\ConvColor,%
+        height=12,width={1.5},depth=12}};
+% downsample_3, batch_norm_2, leaky_relu_3
+\pic[shift={(1,0,0)}] at (down3-east) {Box={name=bn2,%
+        fill=\BatchNormColor,opacity=0.6, height=8, width=1, depth=8}};
+\pic[shift={(0,0,0)}] at (bn2-east) {Box={name=lr3,%
+        fill=\LeakyReluColor,opacity=0.6,height=8,width=1,depth=8}};
+%%%%%%%%%%
+% downsample_4, conv2d_4
+\pic[shift={(0,0,0)}] at (lr3-east) {Box={name=down4,%
+        xlabel={{"512",}},caption=I/8,fill=\ConvColor,%
+        height=8,width={2},depth=8}};
+% downsample_4, batch_norm_3, leaky_relu_4
+\pic[shift={(1,0,0)}] at (down4-east) {Box={name=bn3,%
+        fill=\BatchNormColor,opacity=0.6, height=4, width=1, depth=4}};
+\pic[shift={(0,0,0)}] at (bn3-east) {Box={name=lr4,%
+        fill=\LeakyReluColor,opacity=0.6,height=4,width=1,depth=4}};
+
+% Final layer
+\pic[shift={(0,0,0)}] at (lr4-east) {Box={name=final, caption={Out},%
+        xlabel={1}, fill=\ConvColor,opacity=0.6,height=4,width=1,depth=4}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Draw connections
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\path (input1-east) to node[cat, near input1] (input1cat);
+%\path (input2-east) to (cat, near input2-east) (input2cat);
+
+\draw[copyconnection](input1-east)--node{\copymidarrow}(cat-northwest);
+\draw[copyconnection](input2-east)--node{\copymidarrow}(cat-southwest);
+
+\draw[copyconnection](cat-east)--node{\copymidarrow}(down1-west);
+\draw[copyconnection](down1-east)--node{\copymidarrow}(down2-west);
+\draw[copyconnection](down2-east)--node{\copymidarrow}(down3-west);
+\draw[copyconnection](down3-east)--node{\copymidarrow}(down4-west);
+\draw[copyconnection](down4-east)--node{\copymidarrow}(final-west);
+
+%\draw[copyconnection](input2-east)--node{\copymidarrow}(cat-west);
+%\draw[connection](down2-east)--node{\midarrow}(downlr2-mid)--node{}(lr2-west-|downlr2-mid)--node{\midarrow}(lr2-west);
+%\draw[connection](down3-east)--node{\midarrow}(downlr3-mid)--node{}(lr3-west-|downlr3-mid)--node{\midarrow}(lr3-west);
+%\draw[connection](down4-east)--node{\midarrow}(downlr4-mid)--node{}(lr4-west-|downlr4-mid)--node{\midarrow}(lr4-west);
+%\draw[connection](down5-east)--node{\midarrow}(downlr5-mid)--node{}(lr5-west-|downlr5-mid)--node{\midarrow}(lr5-west);
+%\draw[connection](down6-east)--node{\midarrow}(downlr6-mid)--node{}(lr6-west-|downlr6-mid)--node{\midarrow}(lr6-west);
+%\draw[connection](down7-east)--node{\midarrow}(downlr7-mid)--node{}(lr7-west-|downlr7-mid)--node{\midarrow}(lr7-west);
+%\draw[connection](down8-east)--node{}(downlr8-mid)--node{}(lr8-west-|downlr8-mid)--node{\midarrow}(lr8-west);
+
+%\draw [connection]  (input-east) -- node {\midarrow} (down1-west);
+%\draw [connection]  (final-east) -- node {\midarrow} (out-west);
+
+%\draw [copyconnection]  (down7-east)  -- node {\copymidarrow} (cat7-west);
+%\draw [copyconnection]  (down6-east)  -- node {\copymidarrow} (cat6-west);
+%\draw [copyconnection]  (down5-east)  -- node {\copymidarrow} (cat5-west);
+%\draw [copyconnection]  (down4-east)  -- node {\copymidarrow} (cat4-west);
+%\draw [copyconnection]  (down3-east)  -- node {\copymidarrow} (cat3-west);
+%\draw [copyconnection]  (down2-east)  -- node {\copymidarrow} (cat2-west);
+%\draw [copyconnection]  (down1-east)  -- node {\copymidarrow} (cat1-west);
+
+%\draw [copyconnection]  (cat7-east)  -- node {\copymidarrow} (up6-west);
+%\draw [copyconnection]  (cat6-east)  -- node {\copymidarrow} (up5-west);
+%\draw [copyconnection]  (cat5-east)  -- node {\copymidarrow} (up4-west);
+%\draw [copyconnection]  (cat4-east)  -- node {\copymidarrow} (up3-west);
+%\draw [copyconnection]  (cat3-east)  -- node {\copymidarrow} (up2-west);
+%\draw [copyconnection]  (cat2-east)  -- node {\copymidarrow} (up1-west);
+%\draw [copyconnection]  (cat1-east)  -- node {\copymidarrow} (final-west);
+
+%\draw [copyconnection]  (up7-north)  -- node {\copymidarrow} (cat7-south);
+%\draw [copyconnection]  (up6-north)  -- node {\copymidarrow} (cat6-south);
+%\draw [copyconnection]  (up5-north)  -- node {\copymidarrow} (cat5-south);
+%\draw [copyconnection]  (up4-north)  -- node {\copymidarrow} (cat4-south);
+%\draw [copyconnection]  (up3-north)  -- node {\copymidarrow} (cat3-south);
+%\draw [copyconnection]  (up2-north)  -- node {\copymidarrow} (cat2-south);
+%\draw [copyconnection]  (up1-north)  -- node {\copymidarrow} (cat1-south);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{tikzpicture}
+\end{document}

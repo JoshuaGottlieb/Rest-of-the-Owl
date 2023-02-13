@@ -4,6 +4,7 @@
 \subimport{../layers/}{init}
 \usetikzlibrary{positioning}
 
+\def\InputColor{rgb:white,0.3;black,0.3}
 \def\ConvColor{rgb:red,1;black,0.3}
 \def\DeconvColor{rgb:blue,2;green,1;black,0.3}
 \def\LeakyReluColor{rgb:yellow,1;black,0.3}
@@ -22,11 +23,17 @@
 \tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Input Layer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pic[shift={(0,0,0)}] at (0,0,0) {Box={name=input,%
+        xlabel={{"",}},caption=Input,zlabel={I},fill=\InputColor,%
+        height=30,width={0.5},depth=30}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Draw Encoder
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % downsample_1, conv2d_1
-\pic[shift={(0,0,0)}] at (0,0,0) {Box={name=down1,%
-        xlabel={{"64",}},caption=I,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+\pic[shift={(2,0,0)}] at (input-east) {Box={name=down1,%
+        xlabel={{"64",}},caption=I,fill=\ConvColor,%
         height=30,width={0.5},depth=30}};
 % downsample_1, leaky_relu_1
 \pic[shift={(0.5,-2.5,0)}] at (down1-east) {Box={name=lr1,%
@@ -34,7 +41,7 @@
 %%%%%%%%%%
 % downsample_2, conv2d_2
 \pic[shift={(0,0,0)}] at (lr1-east) {Box={name=down2,%
-        xlabel={{"128",}},caption=I/2,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        xlabel={{"128",}},caption=I/2,fill=\ConvColor,%
         height=26,width={1},depth=26}};
 % downsample_2, batch_norm_1, leaky_relu_2
 \pic[shift={(0.5,-2.25,0)}] at (down2-east) {Box={name=bn1,%
@@ -44,7 +51,7 @@
 %%%%%%%%%%
 % downsample_3, conv2d_3
 \pic[shift={(0,0,0)}] at (lr2-east) {Box={name=down3,%
-        xlabel={{"256",}},caption=I/4,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        xlabel={{"256",}},caption=I/4,fill=\ConvColor,%
         height=22,width={1.5},depth=22}};
 % downsample_3, batch_norm_2, leaky_relu_3
 \pic[shift={(0.5,-2,0)}] at (down3-east) {Box={name=bn2,%
@@ -54,7 +61,7 @@
 %%%%%%%%%%
 % downsample_4, conv2d_4
 \pic[shift={(0,0,0)}] at (lr3-east) {Box={name=down4,%
-        xlabel={{"512",}},caption=I/8,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        xlabel={{"512",}},caption=I/8,fill=\ConvColor,%
         height=18,width={2},depth=18}};
 % downsample_4, batch_norm_3, leaky_relu_4
 \pic[shift={(0.5,-1.75,0)}] at (down4-east) {Box={name=bn3,%
@@ -64,7 +71,7 @@
 %%%%%%%%%%
 % downsample_5, conv2d_5
 \pic[shift={(0,0,0)}] at (lr4-east) {Box={name=down5,%
-        xlabel={{"512",}},caption=I/16,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        xlabel={{"512",}},caption=I/16,fill=\ConvColor,%
         height=14,width={2.5},depth=14}};
 % downsample_5, batch_norm_4, leaky_relu_5
 \pic[shift={(0.5,-1.5,0)}] at (down5-east) {Box={name=bn4,%
@@ -74,7 +81,7 @@
 %%%%%%%%%%
 % downsample_6, conv2d_6
 \pic[shift={(0,0,0)}] at (lr5-east) {Box={name=down6,%
-        xlabel={{"512",}},caption=I/64,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        xlabel={{"512",}},caption=I/64,fill=\ConvColor,%
         height=10,width={3},depth=10}};
 % downsample_6, batch_norm_5, leaky_relu_6
 \pic[shift={(0.25,-1.25,0)}] at (down6-east) {Box={name=bn5,%
@@ -84,7 +91,7 @@
 %%%%%%%%%%
 % downsample_7, conv2d_7
 \pic[shift={(0,0,0)}] at (lr6-east) {Box={name=down7,%
-        xlabel={{"512",}},caption=I/128,fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        xlabel={{"512",}},caption=I/128,fill=\ConvColor,%
         height=6,width={3.5},depth=6}};
 % downsample_7, batch_norm_6, leaky_relu_7
 \pic[shift={(0.25,-1,0)}] at (down7-east) {Box={name=bn6,%
@@ -95,7 +102,7 @@
 %% Bottleneck
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% downsample_8, conv2d_8
 \pic[shift={(0,0,0)}] at (lr7-east) {Box={name=down8,caption=I/256,%
-        xlabel={{"512",}},fill=\ConvColor,%bandfill=\ConvLeakyReluColor,%
+        xlabel={{"512",}},fill=\ConvColor,%
         height=4,width={4},depth=4}};
 % downsample_8, batch_norm_7, leaky_relu_8
 \pic[shift={(0,0,0)}] at (down8-east) {Box={name=bn7,%
@@ -204,6 +211,7 @@
 \draw[connection](down7-east)--node{\midarrow}(downlr7-mid)--node{}(lr7-west-|downlr7-mid)--node{\midarrow}(lr7-west);
 \draw[connection](down8-east)--node{}(downlr8-mid)--node{}(lr8-west-|downlr8-mid)--node{\midarrow}(lr8-west);
 
+\draw [connection]  (input-east) -- node {\midarrow} (down1-west);
 \draw [connection]  (final-east) -- node {\midarrow} (out-west);
 
 \draw [copyconnection]  (down7-east)  -- node {\copymidarrow} (cat7-west);
