@@ -593,7 +593,7 @@ def remove_duplicates(image_dir, sketch_dir, duplicate_dictionary = None, rechec
         
     return
 
-def resize_image(image_path, size):
+def resize_image(image, size):
     '''
     Resizes image to desired size ratio with zeros padding. Returns a padded image of the specified size.
     Adapted from https://jdhao.github.io/2017/11/06/resize-image-to-square-with-padding/
@@ -602,7 +602,7 @@ def resize_image(image_path, size):
     size: 2-tuple, denoting the (width, height) dimensions to resize the image to.
     '''
     
-    im = Image.open(image_path)
+    im = image
     old_size = im.size
     
     ratio = float(max(size))/max(old_size)
@@ -637,7 +637,8 @@ def resize_images(directory, size):
     
     # Save resized images to destination.
     for index, image in enumerate(images):
-        im = resize_image(directory + '/' + image, size)
+        img = Image.open(directory + '/' + image)
+        im = resize_image(img, size)
         im.save(end_dir + '/' + end_dir_files[index])
         
     return
@@ -659,7 +660,8 @@ def resize_sketches(directory, size):
     
     # Save resized sketches to destination.
     for index, sketch in enumerate(sketches):
-        im = resize_image(directory + '/' + sketch, size)
+        img = Image.open(directory + '/' + sketch)
+        im = resize_image(img, size)
         im.save(end_dir + '/' + end_dir_files[index])
         
     return
