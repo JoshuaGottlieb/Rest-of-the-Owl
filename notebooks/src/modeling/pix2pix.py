@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Adam
 import numpy as np
 import time
 from IPython import display
-from ..utils import generate_images
+from .. import utils
 
 def generator_loss_pix2pix(disc_generated_output, gen_output, target, loss_object):
     '''
@@ -127,7 +127,7 @@ def fit_pix2pix(train_ds, test_ds, epochs, generator, discriminator,
 
         # Restart timer and display current results of training.    
         start = time.time()
-        generate_images(generator, example_input, example_target)
+        utils.generate_images(generator, example_input, example_target)
         print(f'Epoch: {epoch + starting_epoch + 1}')
         
         # Initialize empty array for losses.
@@ -159,9 +159,7 @@ def fit_pix2pix(train_ds, test_ds, epochs, generator, discriminator,
                     os.mkdir(epoch_dir)
                 generator.save(f'{epoch_dir}/generator.h5')
                 discriminator.save(f'{epoch_dir}/discriminator.h5')
-                with open(f'{epoch_dir}/gen_optim_config.pickle', 'wb') as f:
-                    pickle.dump(gen_optimizer.get_config(), f)
-                with open(f'{epoch_dir}/discrim_optim_config.pickle', 'wb') as f:
-                    pickle.dump(discrim_optimizer.get_config(), f)
+                utils.pickle_obj(gen_optimizer.get_config(), f'{epoch_dir}/gen_optim_config.pickle')
+                utils.pickle_obj(discrim_optimizer.get_config(), f'{epoch_dir}/discrim_optim_config.pickle')
 
     return
