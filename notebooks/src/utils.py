@@ -64,7 +64,7 @@ def reload_model_from_epoch(epoch_dir, model_type, base_path = '..'):
     
     epoch_dir: str, denoting the directory containing the saved model information.
     model_type: "autopainter" or "pix2pix", denoting the type of model to reload.
-    base_path: str, denoting the base path of repository, for use in specifying log and model locations.
+    base_path: str, denoting the base path of repository, for use in specifying log and model locations. Default '..'.
     '''
     
     components = []

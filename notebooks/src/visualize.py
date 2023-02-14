@@ -365,7 +365,7 @@ def image_generations_per_epoch(image_indices, epochs, model_names, base_path = 
     rows = len(epochs) + 2
     columns = len(image_indices) * len(model_names)
     
-    fig, ax = plt.subplots(rows, columns, figsize = (width_multi * rows, height_multi * columns)
+    fig, ax = plt.subplots(rows, columns, figsize = (width_multi * rows, height_multi * columns))
     
     # Plot images.
     for i, index in enumerate(image_indices):
@@ -423,5 +423,67 @@ def image_generations_per_epoch(image_indices, epochs, model_names, base_path = 
     
     # Adjust subplot spacing.
     plt.subplots_adjust(wspace = 0, hspace = 0);
+    
+    return fig, ax
+
+def plot_gen_and_disc_losses(df, model_name):
+    '''
+    Plots the losses for a model. Returns a fig, ax object containing the plots of the losses functions.
+    
+    df: Pandas DataFrame, containing the columns "epoch", "gen_total_loss", and "disc_loss", used to plot the losses.
+    model_name: str, denoting the model name. Used to format the titles of the graphs.
+    '''
+    
+    # Draw fig, ax objects.
+    fig, ax = plt.subplots(2, 1, figsize = (28, 18))
+    
+    # Draw loss graphs on the same graph.
+    sns.lineplot(x = df.epoch, y = df.gen_total_loss, label = 'Generator Total Loss', ax = ax[0]);
+    sns.lineplot(x = df.epoch, y = df.disc_loss, label = 'Discriminator Loss', ax = ax[1]);
+
+    # Configure labels and titles.
+    configure_axislabels_and_title('Epochs', 'Generator Total Loss',
+                                   f'{model_name} Generator Loss Across Epochs', ax = ax[0]);
+    configure_axislabels_and_title('Epochs', 'Discriminator Total Loss',
+                                   f'{model_name} Discriminator Loss Across Epochs', ax = ax[1]);
+    
+    # Add a red horizontal line denoting the ideal discriminator loss at ln(2) - 50/50 uncertainty.
+    ax[1].hlines(np.log(2), 0, 200, colors = 'red', label = 'Ideal Discriminator Loss')
+    
+    # Configure ticklabels and legend.
+    for axis in ax:
+        configure_ticklabels_and_params(ax = axis);
+        configure_legend(ax = axis, fancybox = True, frameon = True, fontsize = 16);
+        
+    # Set tight layout.
+    plt.tight_layout(pad = 3.0)
+
+    return fig, ax
+
+def plot_fid_scores(merged_fid_df):
+    '''
+    Plots the FID scores for both models. Returns fig, ax objects containing plotted scores.
+    
+    merged_fid_df: Pandas DataFrame, containing columns "epoch", and any number of columns of the form
+                   "fid_\w+", used for plotting the FID scores across models.
+    '''
+    
+    # Create fig, ax objects.
+    fig, ax = plt.subplots(figsize = (16, 8))
+    
+    # Select non-epoch columns.
+    non_epoch_col = [x for x in merged_fid_df.columns if 'epoch' != x.lower()]
+    
+    # For each non-epoch column, draw the lineplot of the FID scores across epochs.
+    for col in non_epoch_col:
+        # Extract the title of the model using regex.
+        label = re.search('fid_(\w+)_?', col)[1].title()
+        sns.lineplot(x = merged_fid_df.epoch, y = merged_fid_df[col], label = label, ax = ax);
+
+    # Configure axis labels, title, ticklabels, and legend.
+    configure_axislabels_and_title('Epochs', 'FID Score',
+                                             'Frechet Inception Distance (FID) Across Epochs', ax = ax);
+    configure_ticklabels_and_params(ax = ax);
+    configure_legend(ax = ax, fancybox = True, frameon = True, fontsize = 16);
     
     return fig, ax
