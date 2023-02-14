@@ -1,11 +1,9 @@
 import os
 import shutil
-from PIL import Image, ImageEnhance, ImageFilter
-from PIL import ImageOps
 import numpy as np
 import pandas as pd
 import re
-import matplotlib.pyplot as plt
+from PIL import Image, ImageOps
 import cv2
 from difPy import dif
 import random
@@ -143,13 +141,13 @@ def invert_images(init_dir, end_dir):
 def dog(img, size = (0,0), k = 1.6, sigma = 0.5, gamma = 1):
     '''
     Applies difference of Gaussians (DoG) to an image. Copied from https://github.com/heitorrapela/xdog
-    Returns difference of image arrays modified by cv2.GaussianBlur transformations.
+    Returns both transformations and difference of image arrays modified by cv2.GaussianBlur transformations.
     
     img: numpy array, array representation of image transform.
     size: 2-tuple, kernel size of matrix to pass to cv2.GaussianBlur. Default (0, 0).
     k: float, multiplier to apply to standard deviation of kernel along X-direction for second GaussianBlur. Default 1.6.
     sigma: float, standard deviation of kernel along X-direction to pass to cv2.GaussianBlur. Default 0.5.
-    gamma: float, multiplier to apply to second GaussianBlur when differencing. Default 1.
+    gamma: float in [0, 1], multiplier to apply to second GaussianBlur when differencing. Default 1.
     '''
     
     img1 = cv2.GaussianBlur(img, size, sigma)
@@ -167,7 +165,7 @@ def xdog_garygrossi(img, sigma = 0.5, k = 200, gamma = 0.98, epsilon = 0.1, phi 
     img: numpy array, array representation of image to transform.
     sigma: float, standard deviation of kernel along X-direction to pass to dog(). Default 0.5.
     k: float, multiplier to apply to standard deviation of kernel along X-direction to pass to dog(). Default 200.
-    gamma: float, multiplier to apply to second GaussianBlur to pass to dog(). Default 0.98.
+    gamma: float in [0, 1], multiplier to apply to second GaussianBlur to pass to dog(). Default 0.98.
     epsilon: float, intensity threshold to determine white space. Default 0.1.
     phi: float, multiplier to apply to elements below epsilon threshold. Default 10.
     '''
@@ -190,8 +188,10 @@ def find_percent_whitespace(sketch_arr, white_space_val = 245, fill_space_val = 
     Returns 2-tuple (white_space_percentage, fill_space_percentage).
     
     sketch_arr: numpy array, array representation of sketch (or image) to process.
-    white_space_val: int, minimum level of intensity required for a pixel to count as white space. Default 245.
-    fill_space_val: int, maximum level of intensity required for a pixel to count as fill space. Default 10.
+    white_space_val: int in [0, 255], minimum level of intensity required for a pixel to count as white space.
+                     Must be higher than fill_space_val to obtain proper results. Default 245.
+    fill_space_val: int in [0, 255], maximum level of intensity required for a pixel to count as fill space.
+                    Must be lower than white_space_val to obtain proper results. Default 10.
     '''
     
     # Apply masks and sum to obtain pixel counts for white space and fill space. Calculate image size.
@@ -211,11 +211,11 @@ def find_sketch_threshold(image, white_space_val = 245, fill_space_val = 10, fil
     Returns None if no suitable sketch found, otherwise returns an image of a sketch.
     
     image: PIL.Image.Image, an image from which to create a sketch.
-    white_space_val: int, minimum level of intensity required for a pixel to count as white space.
+    white_space_val: int in [0, 255], minimum level of intensity required for a pixel to count as white space.
                      Passed to xdog_garygrossi(). Default 245.
-    fill_space_val: int, maximum level of intensity required for a pixel to count as fill space.
+    fill_space_val: int in [0, 255], maximum level of intensity required for a pixel to count as fill space.
                     Passed to xdog_garygrossi(). Default 10.
-    fill_space_threshold: float, percentage of image as fill space indicating the detail threshold of the sketch.
+    fill_space_threshold: float in [0, 1], percentage of image as fill space indicating the detail threshold of the sketch.
                           Default 0.03.
     '''
     
@@ -265,11 +265,11 @@ def create_sketches(directory, dest_tail, white_space_val = 245, fill_space_val 
     
     directory: str, folder path to directory containing images to create sketches of.
     dest_tail: str, denotes the subdirectory of data/raw/actual_owls/sketched/ to write to.
-    white_space_val: int, minimum level of intensity required for a pixel to count as white space.
+    white_space_val: int in [0, 255], minimum level of intensity required for a pixel to count as white space.
                      Passed to find_sketch_threshold(). Default 245.
-    fill_space_val: int, maximum level of intensity required for a pixel to count as fill space.
+    fill_space_val: int in [0, 255], maximum level of intensity required for a pixel to count as fill space.
                     Passed to find_sketch_threshold(). Default 10.
-    fill_space_threshold: float, percentage of image as fill space indicating the detail threshold of the sketch.
+    fill_space_threshold: float in [0, 1], percentage of image as fill space indicating the detail threshold of the sketch.
                           Passed to find_sketch_threshold(). Default 0.03.
     '''
     
@@ -315,8 +315,9 @@ def get_black_border_percentage(image, border = 0.2, threshold = 40):
     Returns a float representing the black border percentage.
     
     image: PIL.Image.Image, image to process.
-    border: float, fraction of image to use as border. Default 0.2.
-    threshold: int, maximum intensity level of a pixel to be considered a "black" pixel. Default 40.
+    border: float in [0, 0.5], half of the fraction of image along each axis to use as border.
+            Example: A value of 0.1 indicates that the outer 80% of the image is used as the border. Default 0.2.
+    threshold: int in [0, 255], maximum intensity level of a pixel to be considered a "black" pixel. Default 40.
     '''
     
     # Get border boundaries.
@@ -327,6 +328,22 @@ def get_black_border_percentage(image, border = 0.2, threshold = 40):
     # Initialize empty list.
     pixel_val = []
     
+    # This is the version that was used for preprocessing of models, but it is wrong.
+    # This version fails to look at the corners of the image.
+        #     # Iterate across border boundaries, getting pixel values.
+        #     for x in range(0, left_bound):
+        #         for y in range(top_bound, bot_bound):
+        #             pixel_val.append(image.getpixel((x,y)))
+        #     for x in range(right_bound, image.width):
+        #         for y in range(top_bound, bot_bound):
+        #             pixel_val.append(image.getpixel((x,y)))
+        #     for y in range(0, top_bound):
+        #         for x in range(left_bound, right_bound):
+        #             pixel_val.append(image.getpixel((x,y)))
+        #     for y in range(bot_bound, image.height):
+        #         for x in range(left_bound, right_bound):
+        #             pixel_val.append(image.getpixel((x,y)))
+    
     # Iterate across border boundaries, getting pixel values.
     for x in range(0, left_bound):
         for y in range(top_bound, bot_bound):
@@ -335,10 +352,10 @@ def get_black_border_percentage(image, border = 0.2, threshold = 40):
         for y in range(top_bound, bot_bound):
             pixel_val.append(image.getpixel((x,y)))
     for y in range(0, top_bound):
-        for x in range(left_bound, right_bound):
+        for x in range(0, image.width):
             pixel_val.append(image.getpixel((x,y)))
     for y in range(bot_bound, image.height):
-        for x in range(left_bound, right_bound):
+        for x in range(0, image.width):
             pixel_val.append(image.getpixel((x,y)))
 
     # Convert to numpy array for masking.
@@ -351,10 +368,10 @@ def get_bad_sketches_by_border(directory, border = 0.2, intensity_threshold = 40
     Calculates black border percentage of all images in directory.
     Returns a list of str representing image indices with too much black border.
     
-    border: float, fraction of image to use as border. Passed to get_black_border_percentage(). Default 0.2.
-    intensity_threshold: int, maximum intensity level of a pixel to be considered a "black" pixel.
+    border: float in [0, 0.5], fraction of image to use as border. Passed to get_black_border_percentage(). Default 0.2.
+    intensity_threshold: int in [0, 255], maximum intensity level of a pixel to be considered a "black" pixel.
                          Passed to get_black_border_percentage(). Default 40.
-    percentage_threshold: float, threshold denoting fraction of border percentage as "black" to be considered bad.
+    percentage_threshold: float in [0, 1], threshold denoting fraction of border percentage as "black" to be considered bad.
                           Default 0.4.
     '''
     
@@ -417,10 +434,10 @@ def select_images_and_sketches(sketch_directories, image_directories, log_files,
                        Should have the same length and order as the sketch_directories to ensure proper matching.
     log_files: list of str, denoting the file paths for the log files for the regular and inverted sketches.
                Should have the same length and order as the sketch_directories to ensure proper matching.
-    border: float, fraction of image to use as border. Passed to get_bad_sketches_by_border(). Default 0.2.
-    intensity_threshold: int, maximum intensity level of a pixel to be considered a "black" pixel.
+    border: float in [0, 0.5], fraction of image to use as border. Passed to get_bad_sketches_by_border(). Default 0.2.
+    intensity_threshold: int in [0, 255], maximum intensity level of a pixel to be considered a "black" pixel.
                          Passed to get_bad_sketches_by_border(). Default 40.
-    percentage_threshold: float, threshold denoting fraction of border percentage as "black" to be considered bad.
+    percentage_threshold: float in [0, 1], threshold denoting fraction of border percentage as "black" to be considered bad.
                           Passed to get_bad_sketches_by_border(). Default 0.4.
     '''
     
@@ -620,16 +637,17 @@ def resize_image(image, size):
     
     return new_im
 
-def resize_images(directory, size):
+def resize_images_and_sketches(image_dir, sketch_dir, size):
     '''
-    Resizes all images in a directory to the specified size.
+    Resizes all images and sketches in given directories to the specified size.
     
-    directory: str, denoting the folder path of the directory to process.
+    image_dir: str, denoting the folder path of the images to process.
+    sketch_dir: str, denoting the folder path of the sketches to process.
     size: 2-tuple, denoting the (width, height) dimensions to resize each image to. Passed to resize_image().
     '''
     
     # Extract images from directory
-    images = sorted(os.listdir(directory))
+    images = sorted(os.listdir(image_dir))
     
     # Create destination files names.
     end_dir = '../data/raw/actual_owls/resized'
@@ -637,22 +655,12 @@ def resize_images(directory, size):
     
     # Save resized images to destination.
     for index, image in enumerate(images):
-        img = Image.open(directory + '/' + image)
+        img = Image.open(image_dir + '/' + image)
         im = resize_image(img, size)
         im.save(end_dir + '/' + end_dir_files[index])
-        
-    return
 
-def resize_sketches(directory, size):
-    '''
-    Resizes all sketches in a directory to the specified size.
-    
-    directory: str, denoting the folder path of the directory to process.
-    size: 2-tuple, denoting the (width, height) dimensions to resize each sketch to. Passed to resize_image().
-    '''
-    
     # Extract sketches from directory
-    sketches = sorted(os.listdir(directory))
+    sketches = sorted(os.listdir(sketch_dir))
     
     # Create destination files names.
     end_dir = '../data/raw/actual_owls/sketched/resized'
@@ -660,7 +668,7 @@ def resize_sketches(directory, size):
     
     # Save resized sketches to destination.
     for index, sketch in enumerate(sketches):
-        img = Image.open(directory + '/' + sketch)
+        img = Image.open(sketch_dir + '/' + sketch)
         im = resize_image(img, size)
         im.save(end_dir + '/' + end_dir_files[index])
         
@@ -686,7 +694,7 @@ def create_train_test_split(test_size = 0.25, random_state = 42):
     Creates a train-test split of the sketches and images, concatenates the sketches and images together, and
     copies the result into train and test folders.
     
-    test_size: float, fraction of dataset to use as test data. Default 0.25.
+    test_size: float in [0, 1], fraction of dataset to use as test data. Default 0.25.
     random_state: int, random state to use for initializing seed. Needed for reproducibility. Default 42.
     '''
     
@@ -717,11 +725,26 @@ def create_train_test_split(test_size = 0.25, random_state = 42):
     return
 
 def preprocess_and_create_sketch(image_file, fill_space_threshold = 0.03):
+    '''
+    Applies all preprocessing steps to a single image file, in preparation for use in models.
+    Returns a concatenated image, containing processed image and its sketch.
+    
+    image_file: str, path to image to process.
+    fill_space_threshold: float in [0, 1], fraction of image as "fill" or "black" space
+                          to use as upper bound for sketch creation. Default 0.03, as used in training models.
+    '''
+    
+    # Convert to grayscale.
     image = Image.open(image_file).convert('L')
+    
+    # Create sketch.
     sketch = find_sketch_threshold(image, fill_space_threshold = fill_space_threshold)[0]
+    
+    # Resize image and sketch.
     image = resize_image(image, (256, 256))
     sketch = resize_image(sketch, (256, 256))
     
+    # Create concatenated image/sketch pair.
     pair = get_concat_h_cut(image, sketch)
     
     return pair
