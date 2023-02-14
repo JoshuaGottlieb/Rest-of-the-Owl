@@ -65,9 +65,9 @@ def scrape_vectorstock(directory, start_page, end_page):
         # Write each image to disk
         for index, image in enumerate(image_tags):
             time.sleep(0.1)
-            
+
             print(f'Saving image {index + 1} of {len(image_tags)} to {subdirectory}.')
-            
+
             img = Image.open(requests.get(image['src'], stream = True).raw)
             img_name = f'VectorStock_Page_{page:02d}_Image_{index + 1:03d}.{img.format}'
             img.save(subdirectory + '/' + img_name)
@@ -120,17 +120,17 @@ def scrape_adobe(directory, start_page, end_page, subcategory_url_string, subcat
         # Write each image to disk
         for index, image in enumerate(image_tags_cleaned):
             time.sleep(0.1)
-            
+
             print(f'Saving image {index + 1} of {len(image_tags_cleaned)} to {subdirectory}.')
-            
+
             if 'data-lazy' in image.attrs.keys():
                 img = Image.open(requests.get(image['data-lazy'], stream = True).raw)
             elif image['src'].endswith('.jpg'):
                 img = Image.open(requests.get(image['src'], stream = True).raw)
-                
+
             img_name = f'AdobeStock{subcategory_title}_Page_{page:03d}_Image_{index + 1:03d}.{img.format}'
             img.save(subdirectory + '/' + img_name)
-        
+
     return
 
 def scrape_fineartamerica(directory, start_page, end_page, subcategory_url_string, subcategory_title):
@@ -179,9 +179,9 @@ def scrape_fineartamerica(directory, start_page, end_page, subcategory_url_strin
         # Write each image to disk
         for index, image in enumerate(image_tags_cleaned):
             time.sleep(0.1)
-            
+
             print(f'Saving image {index + 1} of {len(image_tage_cleaned)} to {subdirectory}.')
-            
+
             img = Image.open(requests.get(image['data-src'], stream = True).raw)
             img_name = f'FineArtAmerica{subcategory_title}_Page_{page:03d}_Image_{index + 1:03d}.{img.format}'
             img.save(subdirectory + '/' + img_name)
