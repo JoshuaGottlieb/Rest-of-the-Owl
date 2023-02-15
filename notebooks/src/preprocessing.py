@@ -427,6 +427,8 @@ def select_images_and_sketches(sketch_directories, image_directories, log_files,
     Given a list of sketch directories, determines which sketch/image pair should be used (regular vs. inverted) and
     moves the good sketch/image pairs to a new directory, renaming them in preparation for stitching.
     
+    Known bug: if both an inverted and regular version of an image is viable, the inverted image is used.
+    
     sketch_directories: list of str, denoting the folder paths for the regular and inverted sketches.
                         Should have length 2.
     image_directories: list of str, denoting the folder paths for the regular and inverted images.
@@ -474,7 +476,7 @@ def select_images_and_sketches(sketch_directories, image_directories, log_files,
     # Update the dictionary entries so that each is disjoint.
     bad_image_dict[directory_tails[0]] -= bad_both
     bad_image_dict[directory_tails[1]] -= bad_both
-    
+        
     # For each directory, copy the image files which are not labeled "bad" from that directory.
     for index, directory in enumerate(image_directories):
         print(f'Copying images for {directory}')
