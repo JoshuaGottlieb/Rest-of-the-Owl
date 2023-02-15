@@ -8,9 +8,6 @@ Non-Colab notebooks are visible in notebooks directory of this repository. All d
 
 Things to do:
 <ul>
-  <li>Add documentation to all functions and test them in all notebooks to ensure they still work.</li>
-  <li>Create PDF of presentation and upload to Github.</li>
-  <li>Move Colab notebooks to Github.</li>
   <li>Update this README.</li>
   <li>Curate the Google Drive to contain only essential information and move data out of personal Google Drive.</li>
 </ul>
@@ -46,6 +43,19 @@ My criteria for selecting images was relatively simple. Images needed to have:
 For examples of images that failed to meet these criteria, see the [dropped subfolder](./visualizations/dropped) in this repository, or check out slide/page 4 of the [presentation](./presentation/Rest-of-the-Owl-Presentation.pdf).
 
 ## Data Cleaning and Sketch Generation
+
+In order to train my model, I needed sketch/image pairs, but my scraping only provided me with images. Thus, I created my own sketches using a the eXtended Difference of Gaussians (XDoG) technique outlined in [XDoG: An eXtended difference-of-Gaussians compendium
+including advanced image stylization](https://users.cs.northwestern.edu/~sco590/winnemoeller-cag2012.pdf). Specifically, I used Python implementation of the baseline XDoG model using a continuous ramp, [available here](https://github.com/heitorrapela/xdog). The DoG process works by applying two separate Gaussian Blurs to an image, one very weak, one very strong, and calculating a weighted difference between the two blurred images. The XDoG process furthers this by applying thresholding to each pixel and ramping each pixel from black to white to create a simple yet effect edge detection algorithm. Illustrated below is the process applied to an image.
+
+| Ground-Truth | Weak Blur | - γ * Strong Blur |
+| :--: | :--: | :--: |
+| ![](./visualizations/DoG/ground_truth_owl.png) | ![](./visualizations/DoG/weak_gauss_blur.png) | ![](./visualizations/DoG/strong_gauss_blur.png) |
+
+| Apply Differencing |
+| :--: |
+| ![](./visualizations/DoG/gauss_mixtures.png) |
+| Apply Thresholding |
+| ![](./visualizations/DoG/sketch_thresholds_01.png) |
 
 
 
