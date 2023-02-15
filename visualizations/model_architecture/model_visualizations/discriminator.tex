@@ -27,10 +27,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input Boxes
 \pic[shift={(0,0,0)}] at (0,0,0) {Box={name=input1,%
-        xlabel={{"",}},zlabel={Real},fill=\InputColor,%
+        xlabel={{"",}},zlabel={Sketch},fill=\InputColor,%
         height=20,width={0.5},depth=20}};
 \pic[shift={(0,-3,0)}] at (input1-south) {Box={name=input2,%
-        xlabel={{"",}},zlabel={Generated},fill=\InputColor,%
+        xlabel={{"",}},zlabel={Generated/Real},fill=\InputColor,%
         height=20,width={0.5},depth=20}};
 % Concatenate
 \path (input1-anchor) -- (input2-anchor) coordinate[pos=0.5] (inputs-mid) ;
