@@ -48,7 +48,6 @@ def remove_bad_pictures(directory, good = False):
             else:
                 good_files_list = [x for x in page_files_list if not any(f'Image_{y}' in x
                                                                      for y in owls_list_str)]
-            
             # Move good images from subdirectory to raw/actual_owls.
             for image in good_files_list:
                 new_path = '../data/raw/actual_owls/named' + image
@@ -284,25 +283,25 @@ def create_sketches(directory, dest_tail, white_space_val = 245, fill_space_val 
         # Open the image.
         im = Image.open(directory + '/' + image)
         image_num = image[-8:-4]
-        
+
         print(f'Finding best sketch for {image_num}')
-        
+
         # Find the best sketch for image.
         sketch, thresh, white_space_per, fill_space_per = \
                 find_sketch_threshold(im, white_space_val = white_space_val, fill_space_val = fill_space_val,
                                       fill_space_threshold = fill_space_threshold)
-        
+
         # Create log string.
         info_string = f'Image: {image_num}, Threshold: {thresh:0.2f}, '\
                       + f'White Space: %{white_space_per:0.2f}, Fill Space: %{fill_space_per:0.2f}'
-        
+
         # Save sketch if found.
         if sketch is not None:
             print(f'Saving sketch for {image_num}')
             sketch.save(end_dir + '/' + end_dir_files[index])
         else:
             print(f'No suitable sketch found for {image_num}')
-        
+
         # Write log info.
         with open(f'../data/raw/actual_owls/sketched/{dest_tail}_sketch_info.txt', 'a') as f:
                 f.write(info_string)
@@ -479,18 +478,18 @@ def select_images_and_sketches(sketch_directories, image_directories, log_files,
     # For each directory, copy the image files which are not labeled "bad" from that directory.
     for index, directory in enumerate(image_directories):
         print(f'Copying images for {directory}')
-        
+
         # Get images from directory.
         images = sorted(os.listdir(directory))
-        
+
         # Select the good images.
         good_images = [x for x in images if int(x[-8:-4]) not in bad_image_dict[directory_tails[index]]\
                                             and int(x[-8:-4]) not in bad_both]
-        
+
         # Create the destination names.
         end_dir_images = '../data/raw/actual_owls/selected'
         end_dir_image_names = [f'Owl_Selected_{x[-8:-4]}.jpg' for x in good_images]
-        
+
         # Copy the good images to the final destination.
         for ix, image in enumerate(good_images):
             shutil.copy(directory + '/' + image, end_dir_images + '/' +  end_dir_image_names[ix])
@@ -498,22 +497,22 @@ def select_images_and_sketches(sketch_directories, image_directories, log_files,
     # For each directory, copy the sketch files which are not labeled "bad" from that directory.    
     for index, directory in enumerate(sketch_directories):
         print(f'Copying sketches for {directory}')
-        
+
         # Get sketches from directory.
         sketches = sorted(os.listdir(directory))
-        
+
         # Select the good sketches.
         good_sketches = [x for x in sketches if int(x[-8:-4]) not in bad_image_dict[directory_tails[index]]\
                                              and int(x[-8:-4]) not in bad_both]
-        
+
         # Create the destination names.
         end_dir_sketches = '../data/raw/actual_owls/sketched/selected'
         end_dir_sketch_names = [f'Owl_Sketched_Selected_{x[-8:-4]}.jpg' for x in good_sketches]
-        
+
         # Copy the good sketches to the final destination.
         for ix, sketch in enumerate(good_sketches):
             shutil.copy(directory + '/' + sketch, end_dir_sketches + '/' +  end_dir_sketch_names[ix])
-            
+
     return
 
 def remove_duplicates(image_dir, sketch_dir, duplicate_dictionary = None, recheck = False):
@@ -562,12 +561,12 @@ def remove_duplicates(image_dir, sketch_dir, duplicate_dictionary = None, rechec
     # Copy to end directory.
     for ix, image in enumerate(non_duplicate_images):
         shutil.copy(image_dir + '/' + image, end_dir_images + '/' +  end_dir_image_names[ix])
-        
+
     print('Copying sketches.')
-    
+
     # Extract names of sketches from sketch directory.
     sketches = sorted(os.listdir(sketch_dir))
-    
+
     # Select unique entries.
     non_duplicate_sketches = [x for x in sketches if (x[-8:-4]) not in duplicate_num]
 
@@ -578,16 +577,16 @@ def remove_duplicates(image_dir, sketch_dir, duplicate_dictionary = None, rechec
     # Copy to end directory.
     for ix, sketch in enumerate(non_duplicate_sketches):
         shutil.copy(directory + '/' + sketch, end_dir_sketches + '/' +  end_dir_sketch_names[ix])
-    
-    # If recheck is true, rerun difPy with default parameters on the images again, with previously found duplicates removed.
-    # Remove any further duplicates in place.
+
+    # If recheck is true, rerun difPy with default parameters on the images again,
+    # with previously found duplicates removed. Remove any further duplicates in place.
     if recheck:
         print('Checking for more duplicates.')
-        
+
         # Generate duplicate dictionary from difPy.
         duplicate_dict = dif(end_dir_images).result
         duplicates = []
-    
+
         # Extract all names of duplicates
         for key in duplicate_dict.keys():
             for img in duplicate_dict[key]['duplicates']:
@@ -595,19 +594,19 @@ def remove_duplicates(image_dir, sketch_dir, duplicate_dictionary = None, rechec
 
         # Extract indices of duplicate names.
         duplicate_num = [x[-8:-4] for x in duplicates]
-        
+
         # Remove duplicates found in place.
         print('Removing rechecked duplicates.')
         images = sorted(os.listdir(end_dir_images))
         sketches = sorted(os.listdir(end_dir_sketches))
         rechecked_duplicate_images = [x for x in images if (x[-8:-4]) in duplicate_num]
         rechecked_duplicate_sketches = [x for x in sketches if (x[-8:-4]) in duplicate_num]
-        
+
         for ix, image in enumerate(rechecked_duplicate_images):
             os.remove(end_dir_images + '/' +  rechecked_duplicate_images[ix])
         for ix, sketch in enumerate(rechecked_duplicate_sketches):
             os.remove(end_dir_sketches + '/' +  rechecked_duplicate_sketches[ix])
-        
+
     return
 
 def resize_image(image, size):
@@ -653,11 +652,14 @@ def resize_images_and_sketches(image_dir, sketch_dir, size):
     end_dir = '../data/raw/actual_owls/resized'
     end_dir_files = [f'Owl_Resized_{x[-8:-4]}.jpg' for x in images]
     
-    # Save resized images to destination.
-    for index, image in enumerate(images):
-        img = Image.open(image_dir + '/' + image)
-        im = resize_image(img, size)
-        im.save(end_dir + '/' + end_dir_files[index])
+    
+    print('Success')
+    if move:
+        # Save resized images to destination.
+        for index, image in enumerate(images):
+            img = Image.open(image_dir + '/' + image)
+            im = resize_image(img, size)
+            im.save(end_dir + '/' + end_dir_files[index])
 
     # Extract sketches from directory
     sketches = sorted(os.listdir(sketch_dir))
@@ -707,14 +709,14 @@ def create_train_test_split(test_size = 0.25, random_state = 42):
     # Randomly select test and train indices.
     test_indices = random.sample(indices, int(test_size * len(indices)))
     train_indices = [x for x in indices if x not in test_indices]
-    
+
     # For each index in test indices, extract the image and sketch, concatenate, and save to test folder.
     for index in test_indices:
         im1 = Image.open(f'../data/raw/actual_owls/resized/Owl_Resized_{index}.jpg')
         im2 = Image.open(f'../data/raw/actual_owls/sketched/resized/Owl_Sketched_Resized_{index}.jpg')
         im_concat = get_concat_h_cut(im1, im2)
         im_concat.save(f'../data/test/Owl_Pair_{index}.jpg')
-        
+
     # For each index in train indices, extract the image and sketch, concatenate, and save to train folder.
     for index in train_indices:
         im1 = Image.open(f'../data/raw/actual_owls/resized/Owl_Resized_{index}.jpg')

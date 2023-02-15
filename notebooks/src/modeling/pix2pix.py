@@ -5,8 +5,10 @@ from tensorflow.keras.optimizers import Adam
 import numpy as np
 import time
 from IPython import display
+import os
 from .. import utils
 
+@tf.function
 def generator_loss_pix2pix(disc_generated_output, gen_output, target, loss_object):
     '''
     Calculates the generator loss for the pix2pix model.
@@ -30,6 +32,7 @@ def generator_loss_pix2pix(disc_generated_output, gen_output, target, loss_objec
 
     return total_gen_loss, gan_loss, l1_loss
 
+@tf.function
 def discriminator_loss_pix2pix(disc_real_output, disc_generated_output, loss_object):
     '''
     Calculates the discriminator loss for the pix2pix model. Returns the total discriminator loss.
@@ -51,6 +54,7 @@ def discriminator_loss_pix2pix(disc_real_output, disc_generated_output, loss_obj
 
     return total_disc_loss
 
+@tf.function
 def train_step_pix2pix(input_image, target, generator, discriminator, gen_optimizer, discrim_optimizer, loss_obj):
     '''
     Train step for the pix2pix model. Returns losses.
@@ -67,10 +71,10 @@ def train_step_pix2pix(input_image, target, generator, discriminator, gen_optimi
     
     # Run sketches and ground-truth images through generator and discriminator and calculate losses.
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        gen_output = generator(input_image, training=True)
+        gen_output = generator(input_image, training = True)
 
-        disc_real_output = discriminator([input_image, target], training=True)
-        disc_generated_output = discriminator([input_image, gen_output], training=True)
+        disc_real_output = discriminator([input_image, target], training = True)
+        disc_generated_output = discriminator([input_image, gen_output], training = True)
 
         gen_total_loss, gen_gan_loss, gen_l1_loss = generator_loss_pix2pix(disc_generated_output, gen_output,
                                                                            target, loss_obj)
@@ -119,7 +123,7 @@ def fit_pix2pix(train_ds, test_ds, epochs, generator, discriminator,
     
     # Loop through each epoch.
     for epoch, _ in enumerate(epoch_range):
-        display.clear_output(wait=True)
+        display.clear_output(wait = True)
 
         # Print time to process previous epoch.
         if (epoch + starting_epoch) != starting_epoch:
@@ -153,7 +157,7 @@ def fit_pix2pix(train_ds, test_ds, epochs, generator, discriminator,
                         + f'disc_loss: {train_losses[3]:0.3f}\n')
 
             # Save models every 10 epochs.        
-            if ((epoch + 1) % 10) == 0:
+            if ((epoch + starting_epoch + 1) % 10) == 0:
                 epoch_dir = f'{model_dir}/epoch_{epoch + starting_epoch + 1:03d}'
                 if not os.path.exists(epoch_dir):
                     os.mkdir(epoch_dir)

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.ticker as pltticker
 import seaborn as sns
+import re
 from PIL import Image, ImageOps
 from . import preprocessing as prep
 from .model_analysis import generation as gen
@@ -180,7 +181,7 @@ def plot_single_image(image, x_label = None, y_label = None, title = None, title
     # Draw image, configure labels, and remove ticks.
     ax.imshow(image, cmap = 'gray', vmin = 0, vmax = 255);
     configure_axislabels_and_title(x_label, y_label, title, ax = ax,
-                                   axis_size = fontsize, axis_pad = labelpad,
+                                   axis_size = axis_size, axis_pad = axis_pad,
                                    title_size = title_size, title_pad = title_pad)
     remove_ticks(ax);
 
@@ -231,12 +232,12 @@ def display_sketch_thresholds(image_file, fill_space_thresholds, sketch_list):
 
     # Plot sketches.
     for i in range(len(fill_space_thresholds)):
-        plot_single_image(sketches[i][0],
-                          x_label = f'Threshold {fill_space_thresholds[i]}\nGamma: {sketches[i][1]}',
+        plot_single_image(sketch_list[i][0],
+                          x_label = f'Threshold {fill_space_thresholds[i]}\nGamma: {sketch_list[i][1]}',
                           axis_pad = 10, axis_size = 16, axis = ax[i])
 
     # Plot image.
-    plot_single_image(sketches[i][0], x_label = 'Ground-Truth', axis_pad = 10, axis_size = 16, axis = ax[-1])
+    plot_single_image(sketch_list[i][0], x_label = 'Ground-Truth', axis_pad = 10, axis_size = 16, axis = ax[-1])
                    
     # Adjust subplot spacing.
     plt.subplots_adjust(wspace = 0, hspace = 0);
@@ -303,7 +304,7 @@ def create_images_with_border(inverted_image, regular_image, border = 0.2):
                       axis_pad = 10, axis_size = 16, axis = ax[0])
     plot_single_image(regular_image, x_label = f'BB%: {black_border_percentage_reg:0.4f}',
                       title = 'Regular', title_pad = 10, title_size = 24,
-                      axis_pad = 10, axis_size = 16, axis = ax[0])
+                      axis_pad = 10, axis_size = 16, axis = ax[1])
     
     # Determine border color - green means that version of the image is good, red means that version is bad.
     if black_border_percentage_inv < 0.4:

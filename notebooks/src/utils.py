@@ -1,5 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import keras
 from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.applications.vgg16 import VGG16
 import pickle
@@ -27,7 +28,7 @@ def unpickle(file):
     with open(file, 'rb') as f:
         obj = pickle.load(f)
         
-    return 
+    return obj
 
 def generate_images(model, test_input, tar):
     '''
@@ -91,7 +92,8 @@ def reload_model_from_epoch(epoch_dir, model_type, base_path = '..'):
         components.append(loss_obj)
     elif model_type == 'autopainter':
         net = VGG16()
-        components.append(net)
+        model = tf.keras.Model(inputs = net.inputs, outputs = net.layers[9].output)
+        components.append(model)
 
     # Configure log file path and model directory path.
     log_file = f'{base_path}/logs/{model_type}/epoch_data.csv'

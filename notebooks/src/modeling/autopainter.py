@@ -5,6 +5,7 @@ from tensorflow.keras.optimizers import Adam
 import numpy as np
 import time
 from IPython import display
+import os
 from tensorflow.keras.applications.vgg16 import VGG16
 from keras.applications.vgg16 import preprocess_input
 from .. import utils
@@ -29,10 +30,13 @@ def feature_loss(image, vgg):
     Calculates the feature loss based of feature maps extracted from a Visual Geometry Group (VGG) net.
     Adapted from https://www.tensorflow.org/tutorials/generative/pix2pix
              and https://github.com/irfanICMLL/Auto_painter
+             
+    image: 4D tensor, image to calculate loss on.
+    vgg: tf.keras.Model, sub-model using VGG net output at correct layer (in this case, conv3_3)
     '''
     
-    # Instantiate a model with output at the correct layer (in this case, block3, conv2D 3)
-    model = Model(inputs = vgg.inputs, outputs = vgg.layers[9].output)
+#     # Instantiate a model with output at the correct layer (in this case, block3, conv2D 3)
+#     model = Model(inputs = vgg.inputs, outputs = vgg.layers[9].output)
     
     # Preprocess image to conform to VGG16 input requirements
     img = tf.reshape(image, [image.shape[-3], image.shape[-2], image.shape[-1]])
@@ -42,10 +46,11 @@ def feature_loss(image, vgg):
     img = preprocess_input(img)
     
     # Extract feature maps
-    feature_maps = model(img)
+    feature_maps = vgg(img)
     
     return feature_maps
 
+@tf.function
 def generator_loss_autopainter(disc_generated_output, gen_output, target, net):
     '''
     Calculates the generator loss for the autopainter model.
@@ -77,6 +82,7 @@ def generator_loss_autopainter(disc_generated_output, gen_output, target, net):
     
     return gen_total_loss, gen_loss_GAN, gen_loss_L1, gen_loss_tv, gen_loss_f
 
+@tf.function
 def discriminator_loss_autopainter(disc_real_output, disc_generated_output):
     '''
     Calculates the discriminator loss for the pix2pix model. Returns the total discriminator loss.
@@ -96,6 +102,7 @@ def discriminator_loss_autopainter(disc_real_output, disc_generated_output):
 
     return total_disc_loss
 
+@tf.function
 def train_step_autopainter(input_image, target, generator, discriminator, gen_optimizer, discrim_optimizer, net):
     '''
     Train step for the pix2pix model. Returns losses.
@@ -113,10 +120,10 @@ def train_step_autopainter(input_image, target, generator, discriminator, gen_op
 
     # Run sketches and ground-truth images through generator and discriminator and calculate losses.
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        gen_output = generator(input_image, training=True)
+        gen_output = generator(input_image, training = True)
 
-        disc_real_output = discriminator([input_image, target], training=True)
-        disc_generated_output = discriminator([input_image, gen_output], training=True)
+        disc_real_output = discriminator([input_image, target], training = True)
+        disc_generated_output = discriminator([input_image, gen_output], training = True)
 
         gen_total_loss, gen_loss_GAN, gen_loss_L1, gen_loss_tv, gen_loss_f =\
             generator_loss_autopainter(disc_generated_output, gen_output, target, net)
@@ -166,7 +173,7 @@ def fit_autopainter(train_ds, test_ds, epochs, generator, discriminator, gen_opt
     
     # Loop through each epoch.
     for epoch, _ in enumerate(epoch_range):
-        display.clear_output(wait=True)
+        display.clear_output(wait = True)
 
         # Print time to process previous epoch.
         if (epoch + starting_epoch) != starting_epoch:
@@ -198,7 +205,7 @@ def fit_autopainter(train_ds, test_ds, epochs, generator, discriminator, gen_opt
                         + f'disc_loss: {train_losses[5]:0.3f}\n')
 
             # Save models every 10 epochs        
-            if ((epoch + 1) % 10) == 0:
+            if ((epoch + starting_epoch + 1) % 10) == 0:
                 epoch_dir = f'{model_dir}/epoch_{epoch + starting_epoch + 1:03d}'
                 if not os.path.exists(epoch_dir):
                     os.mkdir(epoch_dir)
