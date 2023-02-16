@@ -45,7 +45,7 @@ For examples of images that failed to meet these criteria, see the [dropped subf
 
 ## Data Cleaning and Sketch Generation
 
-In order to train my model, I needed sketch/image pairs, but my scraping only provided me with images. Thus, I created my own sketches using a the eXtended Difference of Gaussians (XDoG) technique outlined in [XDoG: An eXtended difference-of-Gaussians compendium
+In order to train my model, I needed sketch/image pairs, but my scraping only provided me with images. Thus, I created my own sketches using the eXtended Difference of Gaussians (XDoG) technique outlined in [XDoG: An eXtended difference-of-Gaussians compendium
 including advanced image stylization](https://users.cs.northwestern.edu/~sco590/winnemoeller-cag2012.pdf). Specifically, I used Python implementation of the baseline XDoG model using a continuous ramp, [available here](https://github.com/heitorrapela/xdog). The DoG process works by applying two separate Gaussian Blurs to an image, one very weak, one very strong, and calculating a weighted difference between the two blurred images. The XDoG process furthers this by applying thresholding to each pixel and ramping each pixel from black to white to create a simple yet effect edge detection algorithm. Illustrated below is the process applied to an image.
 
 | Ground-Truth | Weak Blur | - γ * Strong Blur |
@@ -104,8 +104,49 @@ The pix2pix losses are relatively simple. `G` stands for the generator, `D` for 
 
 The autopainter losses build upon the pix2pix losses, with two additional loss functions defined as part of the generator loss. The feature loss uses the L2 distance between the feature maps for the real image and the feature maps for the generated image at a specific layer of a convolutional net in order to maintain overall feature and shape consistency in generated images. Following the autopainter paper, I used a VGG16 net and used the `Conv3_3` layer for the feature maps. The total variation loss consists of the root of the sum of squared errors between the generated image and shifted versions of itself. This ensures that the total variation of the generated images is dampened, preventing sharp changes in color (in the case of grayscale images, brightness) in the generated image and produces a smoothing effect on generated images. Both of these losses are added to the pix2pix losses to create the autopainer loss, with the weights for each loss identical to those used in the autopainter models available on GitHub.
 
+The generator and discriminator are composed of a series of downsamplers and upsamplers.
+
+| Downsampler | Upsampler |
+| :--: | :--: |
+| ![](./visualizations/model_architecture/model_visualizations/downsampler.png) | ![](./visualizations/model_architecture/model_visualizations/upsampler.png) |
+
+(The above visualizations have the Conv2D/Conv2DTranspose layers last to best match the following visualization of the whole generator and discriminator models. The actual implementation in code applies the Conv2D/Conv2DTranspose layers first, with the activation layers last.)
+
+Each downsampler consists of a Conv2D layer, with an optional BatchNormalization layer, and a [Leaky ReLU](https://www.tensorflow.org/api_docs/python/tf/keras/layers/LeakyReLU) activation (with an alpha of 0.2, as used in both pix2pix and autopainter papers). Each upsampler consists of a Conv2DTranspose layer, with BatchNormalization, an optional Dropout, and a ReLU activation.
+
+| Generator |
+| :--: |
+| ![](./visualizations/model_architecture/model_visualizations/generator.png) |
+| Discriminator |
+| ![](./visualizations/model_architecture/model_visualizations/discriminator.png) |
+
+`I` stands for the original image dimensions, and the number under each layer represents the number of filters used for that layer.
+
+The generator follows a U-net architecture, using 8 downsamplers and 7 upsamplers. The sketch is processed sequentially through the downsamplers and upsamplers, with copies of the sketch passed to each upsampler across from the same depth level downsampler in order to preserve spatial and high-level feature information obtained from earlier downsampling layers. Unlike a traditional generator in the cGAN architecture, no random noise vector is added as an input. Instead, the BatchNormalization and Dropout layers of the generator act to introduce noise into the image. The generator's final output uses a Tanh activation to create the generated image.
+
+The discriminator begins by concatenating the sketch and real or generated image together, before using a standard Sequential model consisting of 5 downsamplers. Instead of the final layer having a Sigmoid activation, the discriminator outputs a 1 filter mask of the sketch/image pair which is passed into a [BinaryCrossEntropy](https://www.tensorflow.org/api_docs/python/tf/keras/losses/BinaryCrossentropy) loss object to calculate sketch/image probabilities.
+
 ## Results
 
+Both models were trained for 200 epochs using a Google Colab premium GPU. A more detailed breakdown of the losses can be found in the [Model Analysis Notebook](/notebooks/Model-Analysis.ipynb).
+
+| pix2pix losses |
+| :--: |
+| ![](./visualizations/model_health/pix2pix_losses.png) |
+| autopainter losses |
+| ![](./visualizations/model_health/autopainter_losses.png) |
+
+Because the cGAN architecture has no single objective loss function and instead incentivizes the generator and discriminator losses to fluctuate as the models compete, it is difficult to ascertain where the ideal training point is for the model. As a rule of thumb, an ideal discriminator loss is at ln(2) ~ 0.69, as this represents equal uncertainty in determining the truthfulness of sketch/ground-truth and sketch/generated-image pairs, and it can be seen that this occurs in the pix2pix model between epochs 80 and 100, and again at epoch 140. The autopainter model performs similarly to the pix2pix model, minimizing generator loss in the 60-80 epoch range and hitting ideal discriminator loss around epoch 100.
+
+A commonly used metric for evaluating the health of cGANs is the Frechét Inception Distance (FID), introduced in [GANs Trained by a Two Time-Scale Update Rule
+Converge to a Local Nash Equilibrium
+](https://arxiv.org/pdf/1706.08500.pdf). The FID is calculated by first computing the Inception embeddings for each real and generated image in the training dataset, found by using the vector representation of the final global fooling layer of the Inception v3 model for each image. Lower FID scores are correlated with higher quality generated images. I used the Python implementation of the FID score detailed in [How to Evaluate GANs using Frechet Inception Distance](https://wandb.ai/ayush-thakur/gan-evaluation/reports/How-to-Evaluate-GANs-using-Frechet-Inception-Distance-FID---Vmlldzo0MTAxOTI).
+
+| FID Scores |
+| :--: |
+| ![](./visualizations/model_health/FID_scores.png) |
+
+The article that introduced the FID states that a minimum of 10,000 samples should be used to calculate the FID, with a recommended amount of at least 50,000 samples. Unfortunately, my training dataset consisted only of 1,905 samples, which means the FID score is prone to high variance. However, the FID scores shown above agree with the loss graphs examined earlier, achieving minimums in the 70-110 epoch range, further confirming that this is the ideal epoch range for this training session.
 
 ## Conclusions
 
