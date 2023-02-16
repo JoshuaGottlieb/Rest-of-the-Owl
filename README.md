@@ -4,13 +4,17 @@
 
 ## Usage Information and Known Bugs
 
-Non-Colab notebooks are visible in notebooks directory of this repository. All data, model weights, and colab notebooks can be found at this [Google Drive](https://drive.google.com/drive/folders/1G_lOUjNFyL0Vx2cLZQDXYWASLBHe4jL8?usp=share_link) for the time being. The current draft of the presentation can be found [here](https://docs.google.com/presentation/d/1bw1ivyi-PK-g4p3Tn5eHXXpfb9wErUO58FC-7fqH3A4/edit#slide=id.g207a982db38_0_58).
+All models were compiled using Tensorflow v2.11. 
 
-Things to do:
+Known Bugs:
 <ul>
-  <li>Update this README.</li>
-  <li>Curate the Google Drive to contain only essential information and move data out of personal Google Drive.</li>
+  <li>The [get_black_border_percentage()](./notebooks/src/preprocessing.py) function originally failed to account for the corners of the image. The function itself has been fixed, but the model has been trained on images selected using the buggy version of this function.</li>
+  <li>The [select_images_and_sketches()](./notebooks/src/preprocessing.py) function will select inverted versions of images in cases where both regular and inverted versions meet the criteria for selection.</li>
+  <li>The logging step of [train_step_pix2pix()](./notebooks/src/modeling/pix2pix.py) and [train_step_autopainter()](./notebooks/src/modeling/autopainter.py) writes to a .csv file, but the log file is not properly formatted for reading as .csv file in Excel or Pandas. A [parse_logs()](./notebooks/src/model_analysis/logs.py) function is available for parsing these logs.</li>
+  <li>The logging step of [calculate_fid_for_epoch_and_model()](notebooks/src/model_analysis/fid.py) writes to a .csv file, but it writes everything as essentially one long string. A [parse_fid_logs()](./notebooks/src/model_analysis/logs.py) is available for parsing these logs.</li>
 </ul>
+
+A minimal usage set of data,  and all model weights can be found at this [Google Drive](https://drive.google.com/drive/folders/1G_lOUjNFyL0Vx2cLZQDXYWASLBHe4jL8?usp=share_link).
 
 If any of the images in this README fail to load or are not legible due to Github dark mode, all of the visuals contained exist in the [visualizations](./visualizations) directory of this repository or in the [presentation](./presentation/Rest-of-the-Owl-Presentation.pdf).
 
@@ -102,7 +106,7 @@ The pix2pix losses are relatively simple. `G` stands for the generator, `D` for 
 | ![](./visualizations/model_architecture/losses/tv_loss.png) |
 | ![](./visualizations/model_architecture/losses/autopainter_loss.png) |
 
-The autopainter losses build upon the pix2pix losses, with two additional loss functions defined as part of the generator loss. The feature loss uses the L2 distance between the feature maps for the real image and the feature maps for the generated image at a specific layer of a convolutional net in order to maintain overall feature and shape consistency in generated images. Following the autopainter paper, I used a VGG16 net and used the `Conv3_3` layer for the feature maps. The total variation loss consists of the root of the sum of squared errors between the generated image and shifted versions of itself. This ensures that the total variation of the generated images is dampened, preventing sharp changes in color (in the case of grayscale images, brightness) in the generated image and produces a smoothing effect on generated images. Both of these losses are added to the pix2pix losses to create the autopainer loss, with the weights for each loss identical to those used in the autopainter models available on GitHub.
+The autopainter losses build upon the pix2pix losses, with two additional loss functions defined as part of the generator loss. The feature loss uses the L2 distance between the feature maps for the real image and the feature maps for the generated image at a specific layer of a convolutional net `φ` in order to maintain overall feature and shape consistency in generated images. Following the autopainter paper, I used a VGG16 net and used the `Conv3_3` layer for the feature maps. The total variation loss consists of the root of the sum of squared errors between the generated image and shifted versions of itself. This ensures that the total variation of the generated images is dampened, preventing sharp changes in color (in the case of grayscale images, brightness) in the generated image and produces a smoothing effect on generated images. Both of these losses are added to the pix2pix losses to create the autopainter loss, with the weights for each loss identical to those used in the autopainter models available on GitHub.
 
 The generator and discriminator are composed of a series of downsamplers and upsamplers.
 
@@ -110,7 +114,7 @@ The generator and discriminator are composed of a series of downsamplers and ups
 | :--: | :--: |
 | ![](./visualizations/model_architecture/model_visualizations/downsampler.png) | ![](./visualizations/model_architecture/model_visualizations/upsampler.png) |
 
-(The above visualizations have the Conv2D/Conv2DTranspose layers last to best match the following visualization of the whole generator and discriminator models. The actual implementation in code applies the Conv2D/Conv2DTranspose layers first, with the activation layers last.)
+(The above visualizations have the Conv2D/Conv2DTranspose layers last to best match the following visualization of the whole generator and discriminator models. The actual implementation in code applies the Conv2D/Conv2DTranspose layers first, with the activation layers last. All of these visualizations were created using LaTeX and custom layers from [PlotNeuralNet](https://github.com/HarisIqbal88/PlotNeuralNet).)
 
 Each downsampler consists of a Conv2D layer, with an optional BatchNormalization layer, and a [Leaky ReLU](https://www.tensorflow.org/api_docs/python/tf/keras/layers/LeakyReLU) activation (with an alpha of 0.2, as used in both pix2pix and autopainter papers). Each upsampler consists of a Conv2DTranspose layer, with BatchNormalization, an optional Dropout, and a ReLU activation.
 
@@ -142,7 +146,7 @@ Because the cGAN architecture has no single objective loss function and instead 
 
 A commonly used metric for evaluating the health of cGANs is the Frechét Inception Distance (FID), introduced in [GANs Trained by a Two Time-Scale Update Rule
 Converge to a Local Nash Equilibrium
-](https://arxiv.org/pdf/1706.08500.pdf). The FID is calculated by first computing the Inception embeddings for each real and generated image in the training dataset, found by using the vector representation of the final global fooling layer of the Inception v3 model for each image. Lower FID scores are correlated with higher quality generated images. I used the Python implementation of the FID score detailed in [How to Evaluate GANs using Frechet Inception Distance](https://wandb.ai/ayush-thakur/gan-evaluation/reports/How-to-Evaluate-GANs-using-Frechet-Inception-Distance-FID---Vmlldzo0MTAxOTI).
+](https://arxiv.org/pdf/1706.08500.pdf). The FID is calculated by first computing the Inception embeddings for each real and generated image in the training dataset, found by using the vector representation of the final global pooling layer of the Inception v3 model for each image. Lower FID scores are correlated with higher quality generated images. I used the Python implementation of the FID score detailed in [How to Evaluate GANs using Frechet Inception Distance](https://wandb.ai/ayush-thakur/gan-evaluation/reports/How-to-Evaluate-GANs-using-Frechet-Inception-Distance-FID---Vmlldzo0MTAxOTI).
 
 | FID Scores |
 | :--: |
@@ -172,15 +176,21 @@ Most of these failures to produce results can be attributed to bad starting imag
 
 In order to test the effectiveness of my models, I decided to test their generative abilities on non-owl images. As can be seen, the model has done a good job of reproducing the high-detail cat image on the left. It has not added feathers to the cat, which shows that, despite being trained specifically on owls, the models are actually performing edge and detail synthesis from low-detail images, not creating owls out of sketches. This is good, because it shows that the models can generalize beyond their training domain. Interestingly, the smoothing action of the autopainter model causes some issues in reproducing the cat picture, as it fails to capture any of the specular highlights present in the picture. Pix2pix does not have the same issue.
 
-The [owl-bear](https://forgottenrealms.fandom.com/wiki/Owlbear) (a Dungeons & Dragons monster with the body of a bear and head of an owl) in the middle produces middling results, as the sketch-generation process produced a very low detail sketch in comparison to the ground-truth image. For the person on the left, the results of both models are good, but once again, the smoothing action of the autopainter model causes it to struggle to reproduce the facial hair of the man, whereas pix2pix does a much better job. The pix2pix version does suffer from smudging noise artifacts which are absent in the autopainter model.
+The [owl-bear](https://forgottenrealms.fandom.com/wiki/Owlbear) (a Dungeons & Dragons monster with the body of a bear and head of an owl) in the center produces middling results, as the sketch-generation process produced a very low detail sketch in comparison to the ground-truth image. For the person on the left, the results of both models are good, but once again, the smoothing action of the autopainter model causes it to struggle to reproduce the facial hair of the man, whereas pix2pix does a much better job. The pix2pix version does suffer from smudging noise artifacts which are mostly absent in the autopainter model.
 
+## Conclusions and Next Steps
 
+With clever usage of cGAN architectures it is possible to perform sketch-to-image synthesis, allowing aspiring artists to turn their low-level sketches into higher-detail images to aid in the creative process.
 
-## Conclusions
+Further improvements that I might implement include:
+<ul>
+  <li>Acquiring more data and more carefully curating input images.</li>
+  <li>Tweaking the sketch-generation algorithm.</li>
+  <li>Adjusting the black-boder-percentage algorithm.</li>
+  <li>Adjusting the hyperparameters in the model loss functions, and testing different nets beyond VGG16.</li>
+</ul>
 
-
-## Next Steps
-
+In particular, there are many different varieties of the XDoG algorithm, and while I decided to use a global fill-threshold for all of my images, it might be better to use a relative fill-threshold (sketch fill-percentage / ground-truth fill-percentage) in order to maintain a better sketch/ground-truth detail ratio.
 
 ## For More Information
 
