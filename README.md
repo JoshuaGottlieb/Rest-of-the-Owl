@@ -12,6 +12,7 @@ Things to do:
   <li>Curate the Google Drive to contain only essential information and move data out of personal Google Drive.</li>
 </ul>
 
+If any of the images in this README fail to load or are not legible due to Github dark mode, all of the visuals contained exist in the [visualizations](./visualizations) directory of this repository or in the [presentation](./presentation/Rest-of-the-Owl-Presentation.pdf).
 
 ## Overview and Research
 
@@ -78,7 +79,30 @@ In order to remove duplicates, I used the [difPy package](https://github.com/eli
 
 ## Model Architecture
 
+| Generator Training Loop | Discriminator Training Loop |
+| :--: | :--: |
+| ![](./visualizations/model_architecture/model_visualizations/generator_loop.png) | ![](./visualizations/model_architecture/model_visualizations/discriminator_loop.png) |
+| [Generator Loop - Pix2Pix Tutorial](https://www.tensorflow.org/tutorials/generative/pix2pix#define_the_generator_loss) | [Discriminator Loop - Pix2Pix Tutorial](https://www.tensorflow.org/tutorials/generative/pix2pix#define_the_discriminator_loss) |
 
+Both of my models follow a modified cGAN architecture, where the generator and discriminator take turns training each other. The generator creates a fake image from an input sketch. The discriminator takes in the sketch/ground-truth pair and makes a prediction on whether such a pair is probable, and then separately takes in the sketch/generated-image pair and makes a prediction on whether the pair is probable. The discriminator's job is to classify sketch/ground-truth pairs as probable and to classify sketch/generated-image pairs as improbable. The generator's job is to create generated-images that can fool the discriminator. Losses and gradients are then calculated, and weights are updated before training again.
+
+While the pix2pix and autopainter models referenced in their respective papers differ slightly in architecture, my versions utilize the same architecture, differing only in their loss functions.
+
+| pix2pix Losses |
+| :--: |
+| ![](./visualizations/model_architecture/losses/cgan_loss.png) |
+| ![](./visualizations/model_architecture/losses/l1_loss.png) |
+| ![](./visualizations/model_architecture/losses/pix2pix_loss.png) |
+
+The pix2pix losses are relatively simple. `G` stands for the generator, `D` for the discriminator, `x` for the sketch, `y` for the ground-truth image, `z` for the noise, and `G(x,z)` for the generated image. The cGAN loss is defined as the log loss of the discriminator's ability to correctly identify sketch/ground-truth pairs and sketch/generated-image pairs. The discriminator seeks to minimize this loss, while the generator seeks to maximize this loss. In addition, an L1 pixel-level loss is calculated for the generator to ensure that the generated image does not vary drastically from the real image. The weights for each loss are the same as those used in the pix2pix Tensorflow tutorial.
+
+| autopainter Losses |
+| :--: |
+| ![](./visualizations/model_architecture/losses/feature_loss.png) |
+| ![](./visualizations/model_architecture/losses/tv_loss.png) |
+| ![](./visualizations/model_architecture/losses/autopainter_loss.png) |
+
+The autopainter losses build upon the pix2pix losses, with two additional loss functions defined as part of the generator loss. The feature loss uses the L2 distance between the feature maps for the real image and the feature maps for the generated image at a specific layer of a convolutional net in order to maintain overall feature and shape consistency in generated images. Following the autopainter paper, I used a VGG16 net and used the `Conv3_3` layer for the feature maps. The total variation loss consists of the root of the sum of squared errors between the generated image and shifted versions of itself. This ensures that the total variation of the generated images is dampened, preventing sharp changes in color (in the case of grayscale images, brightness) in the generated image and produces a smoothing effect on generated images. Both of these losses are added to the pix2pix losses to create the autopainer loss, with the weights for each loss identical to those used in the autopainter models available on GitHub.
 
 ## Results
 
