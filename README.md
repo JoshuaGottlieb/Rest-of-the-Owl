@@ -130,6 +130,8 @@ The discriminator begins by concatenating the sketch and real or generated image
 
 Both models were trained for 200 epochs using a Google Colab premium GPU. A more detailed breakdown of the losses can be found in the [Model Analysis Notebook](/notebooks/Model-Analysis.ipynb).
 
+### Quantitative Results
+
 | pix2pix losses |
 | :--: |
 | ![](./visualizations/model_health/pix2pix_losses.png) |
@@ -147,6 +149,13 @@ Converge to a Local Nash Equilibrium
 | ![](./visualizations/model_health/FID_scores.png) |
 
 The article that introduced the FID states that a minimum of 10,000 samples should be used to calculate the FID, with a recommended amount of at least 50,000 samples. Unfortunately, my training dataset consisted only of 1,905 samples, which means the FID score is prone to high variance. However, the FID scores shown above agree with the loss graphs examined earlier, achieving minimums in the 70-110 epoch range, further confirming that this is the ideal epoch range for this training session.
+
+### Qualitative Results
+
+| Good Results |
+| :--: |
+| ![](./visualizations/results/good_results_large.png) |
+
 
 ## Conclusions
 
