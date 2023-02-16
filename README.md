@@ -4,20 +4,51 @@
 
 ## Usage Information and Known Bugs
 
-All models were compiled using Tensorflow v2.11. 
+<details><summary>Packages and Versions Used</summary>
+  <p>
+    <ul>
+      <li>requests 2.24.0</li>
+      <li>beautifulsoup4 4.9.3</li>
+      <li>numpy 1.23.3</li>
+      <li>pandas 1.5.2</li>
+      <li>matplotlib 3.3.1</li>
+      <li>seaborn 0.11.0</li>
+      <li>Pillow 9.4.0</li>
+      <li>opencv-python 4.7.0.68</li>
+      <li>difPy 2.4.5</li>
+      <li>scipy 1.10.0</li>
+      <li>keras 2.11.0</li>
+      <li>tensorflow 2.11.0</li>
+    </ul>
+  </p>
+</details>
 
-Known Bugs:
-<ul>
-  <li>The [get_black_border_percentage()](./notebooks/src/preprocessing.py) function originally failed to account for the corners of the image. The function itself has been fixed, but the model has been trained on images selected using the buggy version of this function.</li>
-  <li>The [select_images_and_sketches()](./notebooks/src/preprocessing.py) function will select inverted versions of images in cases where both regular and inverted versions meet the criteria for selection.</li>
-  <li>The logging step of [train_step_pix2pix()](./notebooks/src/modeling/pix2pix.py) and [train_step_autopainter()](./notebooks/src/modeling/autopainter.py) writes to a .csv file, but the log file is not properly formatted for reading as .csv file in Excel or Pandas. A [parse_logs()](./notebooks/src/model_analysis/logs.py) function is available for parsing these logs.</li>
-  <li>The logging step of [calculate_fid_for_epoch_and_model()](notebooks/src/model_analysis/fid.py) writes to a .csv file, but it writes everything as essentially one long string. A [parse_fid_logs()](./notebooks/src/model_analysis/logs.py) is available for parsing these logs.</li>
-</ul>
+<details><summary>Known Bugs</summary>
+&nbsp;
+
+The [get_black_border_percentage()](./notebooks/src/preprocessing.py) function originally failed to account for the corners of the image. The function itself has been fixed, but the model has been trained on images selected using the buggy version of this function.
+
+The [select_images_and_sketches()](./notebooks/src/preprocessing.py) function will select inverted versions of images in cases where both regular and inverted versions meet the criteria for selection.
+
+The logging step of [train_step_pix2pix()](./notebooks/src/modeling/pix2pix.py) and [train_step_autopainter()](./notebooks/src/modeling/autopainter.py) writes to a .csv file, but the log file is not properly formatted for reading as .csv file in Excel or Pandas. A [parse_logs()](./notebooks/src/model_analysis/logs.py) function is available for parsing these logs.
+
+The logging step of [calculate_fid_for_epoch_and_model()](notebooks/src/model_analysis/fid.py) writes to a .csv file, but it writes everything as essentially one long string. A [parse_fid_logs()](./notebooks/src/model_analysis/logs.py) is available for parsing these logs.
+</details>
 
 A minimal usage set of data,  and all model weights can be found at this [Google Drive](https://drive.google.com/drive/folders/1G_lOUjNFyL0Vx2cLZQDXYWASLBHe4jL8?usp=share_link).
 
 If any of the images in this README fail to load or are not legible due to Github dark mode, all of the visuals contained exist in the [visualizations](./visualizations) directory of this repository or in the [presentation](./presentation/Rest-of-the-Owl-Presentation.pdf).
 
+<details><summary>Repository Structure</summary>
+  
+</details>
+
+<details><summary>Google Docs Structure</summary>
+  
+</details>
+
+
+  
 ## Overview and Research
 
 | ![](./visualizations/misc/draw_the_rest_of_the_owl.jpg) |
@@ -197,7 +228,3 @@ In particular, there are many different varieties of the XDoG algorithm, and whi
 Please look at my full analysis in [Jupyter Notebooks](./notebooks) and code in my [Python Modules](./notebooks/src), or my [presentation](./presentation/Rest-of-the-Owl-Presentation.pdf).
 
 For any additional questions, please contact: **Joshua Gottlieb (joshuadavidgottlieb@gmail.com)**
-
-## Repository Structure
-
-
