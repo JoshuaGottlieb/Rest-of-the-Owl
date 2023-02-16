@@ -36,7 +36,7 @@ The [get_black_border_percentage()](./notebooks/src/preprocessing.py) function o
 
 The [select_images_and_sketches()](./notebooks/src/preprocessing.py) function will select inverted versions of images in cases where both regular and inverted versions meet the criteria for selection.
 
-The logging step of [train_step_pix2pix()](./notebooks/src/modeling/pix2pix.py) and [train_step_autopainter()](./notebooks/src/modeling/autopainter.py) writes to a .csv file, but the log file is not properly formatted for reading as .csv file in Excel or Pandas. A [parse_logs()](./notebooks/src/model_analysis/logs.py) function is available for parsing these logs.
+The logging step of [fit_pix2pix()](./notebooks/src/modeling/pix2pix.py) and [fit_autopainter()](./notebooks/src/modeling/autopainter.py) writes to a .csv file, but the log file is not properly formatted for reading as .csv file in Excel or Pandas. A [parse_logs()](./notebooks/src/model_analysis/logs.py) function is available for parsing these logs.
 
 The logging step of [calculate_fid_for_epoch_and_model()](notebooks/src/model_analysis/fid.py) writes to a .csv file, but it writes everything as essentially one long string. A [parse_fid_logs()](./notebooks/src/model_analysis/logs.py) function is available for parsing these logs.
 </details>
@@ -74,7 +74,7 @@ If any of the images in this README fail to load or are not legible due to Githu
 │   │   │   │   └── selected
 │   │   │   └── unaltered
 │   ├── test                                <- Subfolder containing test sketch/image pairs
-│   ├──train                                <- Subfolder containing train sketch/image pairs
+│   ├── train                               <- Subfolder containing train sketch/image pairs
 │   └── generated                           <- Subfolder containing generated images from models at various epochs
 │   │   ├── test
 │   │   │   ├── autopainter
@@ -101,7 +101,7 @@ If any of the images in this README fail to load or are not legible due to Githu
 │   └── modeling
 ├── data                                    <- Folder containing external and code-generated data
 │   ├── test                                <- Subfolder containing test sketch/image pairs
-│   ├──train                                <- Subfolder containing train sketch/image pairs
+│   ├── train                               <- Subfolder containing train sketch/image pairs
 │   └── generated                           <- Subfolder containing generated images from models at various epochs
 │   │   ├── test
 │   │   │   ├── autopainter
