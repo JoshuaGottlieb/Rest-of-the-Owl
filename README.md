@@ -124,7 +124,7 @@ Each downsampler consists of a Conv2D layer, with an optional BatchNormalization
 
 The generator follows a U-net architecture, using 8 downsamplers and 7 upsamplers. The sketch is processed sequentially through the downsamplers and upsamplers, with copies of the sketch passed to each upsampler across from the same depth level downsampler in order to preserve spatial and high-level feature information obtained from earlier downsampling layers. Unlike a traditional generator in the cGAN architecture, no random noise vector is added as an input. Instead, the BatchNormalization and Dropout layers of the generator act to introduce noise into the image. The generator's final output uses a Tanh activation to create the generated image.
 
-The discriminator begins by concatenating the sketch and real or generated image together, before using a standard Sequential model consisting of 5 downsamplers. Instead of the final layer having a Sigmoid activation, the discriminator outputs a 1 filter mask of the sketch/image pair which is passed into a [BinaryCrossEntropy](https://www.tensorflow.org/api_docs/python/tf/keras/losses/BinaryCrossentropy) loss object to calculate sketch/image probabilities.
+The discriminator begins by concatenating the sketch and real or generated image together, before using a PatchGAN architecture (detailed in the [pix2pix paper](https://arxiv.org/pdf/1705.01908.pdf)) to convolutionally evaluate the structure of the sketch/image pair in local regions, using 5 downsampling blocks. Instead of the final layer having a Sigmoid activation, the discriminator outputs a 1 filter mask of the sketch/image pair which is passed into a [BinaryCrossEntropy](https://www.tensorflow.org/api_docs/python/tf/keras/losses/BinaryCrossentropy) loss object to calculate sketch/image probabilities.
 
 ## Results
 
@@ -155,6 +155,18 @@ The article that introduced the FID states that a minimum of 10,000 samples shou
 | Good Results |
 | :--: |
 | ![](./visualizations/results/good_results_large.png) |
+
+In these examples, both models performed well in recreating the original image from the low-detail sketch. Autopainter appears to outperform pix2pix in many instances due to the smoothing properties of its loss functions, which help reduce prevent jagged coloration, such as in the far left owl (although if one preferred an almost Van Gogh artstyle, pix2pix would be a great choice). The extra loss functions in autopainter also help reduce fitting to noise and "smudging" artifacts, such as in the second owl. Despite the earlier quantitative analysis suggesting that the optimal training epohcs appeared in the 80-140 range, there are still some interesting results in the images generated beyond that range. In particular, the far right owl was able to become darker in the autopainter model at 200 epochs, more closely apprixmating the ground-truth levels of brightness.
+
+| Bad Results |
+| :--: |
+| ![](./visualizations/results/bad_results_large.png) |
+
+| Non-Owl Results |
+| :--: |
+| ![](./visualizations/results/non_owls_results_small.png) |
+
+
 
 
 ## Conclusions
