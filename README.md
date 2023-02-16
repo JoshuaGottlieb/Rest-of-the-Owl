@@ -15,9 +15,9 @@ Things to do:
 
 ## Overview and Research
 
-| <img src="https://github.com/JoshuaGottlieb/Rest-of-the-Owl/blob/main/visualizations/misc/draw_the_rest_of_the_owl.jpg"></img> |
+| ![](./visualizations/misc/draw_the_rest_of_the_owl.jpg) |
 | :---: |
-| <a href="https://knowyourmeme.com/memes/how-to-draw-an-owl">Know Your Meme - Rest of the Owl</a> |
+| [Know Your Meme - Rest of the Owl](https://knowyourmeme.com/memes/how-to-draw-an-owl) |
 
 This seemingly comical internet meme inspired an important research question for me. Is it actually possible to take a low-quality sketch of an image and produce a high-quality sketch using neural networks? Low-detail sketches contain very little information, so this seemed like it would be a difficult project, and while my intuition was not wrong about the difficulty of such a task, it turns out that sketch-to-image synthesis is a current domain of research, with papers published on the topic as recently as 2021.
 
@@ -57,6 +57,26 @@ including advanced image stylization](https://users.cs.northwestern.edu/~sco590/
 | Apply Thresholding |
 | ![](./visualizations/DoG/sketch_thresholds_01.png) |
 
+The threshold statistic underneath each image indicates the percentage of the image that is covered in "black" pixels (value <= 40). This is a self-made measurement for the amount of detail each sketch has. Observe how different starting images require different gamma values to obtain the same fill-threshold.
+
+|![](./visualizations/DoG/sketch_thresholds_02.png) |
+| :--: |
+
+In an attempt to normalize the detail levels of each of my sketches, I decided to create sketches based upon fill thresholds rather than by applying a single gamma value across my dataset. After inspecting ~50 images at different thresholds, I settled on a threshold 0.03 as having the best balance of low-detail while not losing general shapes and features that should be captured.
+
+Some images consisted mainly of black images with white highlights. In an attempt to normalize my images as being black drawings on white backgrounds, I decided to invert some of my images. The decision on whether or not to invert an image was done by examining how much of the border was "black" (again, value <= 40). The theory is that images which are on black backgrounds will exhibit a high black-border percentage, while images which are on white backgrounds will exhibit a low black-border percentage.
+
+| Image which should be inverted |
+| :--: |
+| ![](./visualizations/borders/pair_02.png) |
+| Image which should not be inverted |
+| ![](./visualizations/borders/pair_01.png) |
+
+The area of the image that I used for the border was the outer 40% of the image. My threshold for determining if an image should be inverted is a 40% black-border percentage, which is a number I settled on through manual inspection of ~50 images. If a regular image has >40% black-border percentage, the inverted should be used, and vice-versa, as the inverted version of a regular image will have a high black-border percentage.
+
+In order to remove duplicates, I used the [difPy package](https://github.com/elisemercury/Duplicate-Image-Finder/wiki/difPy-Usage-Documentation) to select the highest resolution versions of each image. Finally, after choosing which version of each image to use and generating sketches, the images and sketches were resized to 256x256 with zero-padding to preserve aspect ratio. The sketches and images were then concatenated together horizontally, as specified in the [Tensorflow v2.x tutorial for pix2pix](https://www.tensorflow.org/tutorials/generative/pix2pix), for use in preprocessing for modeling.
+
+## Model Architecture
 
 
 
