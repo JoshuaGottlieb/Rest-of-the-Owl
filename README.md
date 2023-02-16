@@ -37,7 +37,7 @@ My criteria for selecting images was relatively simple. Images needed to have:
   <li>Only a single owl present in the photo, with no other animals present.</li>
   <li>Realistic drawings/photos, and not look like cartoon images or metallic creations.</li>
   <li>No text visible in the image.</li>
-  <li>Minimal background objects (the main ones which I allowed were braches/trees and moons).</li>
+  <li>Minimal background objects (the main ones which I allowed were branches/trees and moons).</li>
   <li>No glasses or hats.</li>
 </ul>
 
@@ -46,7 +46,7 @@ For examples of images that failed to meet these criteria, see the [dropped subf
 ## Data Cleaning and Sketch Generation
 
 In order to train my model, I needed sketch/image pairs, but my scraping only provided me with images. Thus, I created my own sketches using the eXtended Difference of Gaussians (XDoG) technique outlined in [XDoG: An eXtended difference-of-Gaussians compendium
-including advanced image stylization](https://users.cs.northwestern.edu/~sco590/winnemoeller-cag2012.pdf). Specifically, I used Python implementation of the baseline XDoG model using a continuous ramp, [available here](https://github.com/heitorrapela/xdog). The DoG process works by applying two separate Gaussian Blurs to an image, one very weak, one very strong, and calculating a weighted difference between the two blurred images. The XDoG process furthers this by applying thresholding to each pixel and ramping each pixel from black to white to create a simple yet effect edge detection algorithm. Illustrated below is the process applied to an image.
+including advanced image stylization](https://users.cs.northwestern.edu/~sco590/winnemoeller-cag2012.pdf). Specifically, I used the Python implementation of the baseline XDoG model using a continuous ramp, [available here](https://github.com/heitorrapela/xdog). The DoG process works by applying two separate Gaussian Blurs to an image, one very weak, one very strong, and calculating a weighted difference between the two blurred images. The XDoG process furthers this by applying thresholding to each pixel and ramping each pixel from black to white to create a simple yet effective edge detection algorithm. Illustrated below is the process applied to an image.
 
 | Ground-Truth | Weak Blur | - γ * Strong Blur |
 | :--: | :--: | :--: |
@@ -73,7 +73,7 @@ Some images consisted mainly of black images with white highlights. In an attemp
 | Image which should not be inverted |
 | ![](./visualizations/borders/pair_01.png) |
 
-The area of the image that I used for the border was the outer 40% of the image. My threshold for determining if an image should be inverted is a 40% black-border percentage, which is a number I settled on through manual inspection of ~50 images. If a regular image has >40% black-border percentage, the inverted should be used, and vice-versa, as the inverted version of a regular image will have a high black-border percentage.
+The area of the image that I used for the border was the outer 40% of the image. My threshold for determining if an image should be inverted is a 40% black-border percentage, which is a number I settled on through manual inspection of ~50 images. If a regular image has >40% black-border percentage, the inverted version should be used, and vice-versa, as the inverted version of a regular image will have a high black-border percentage.
 
 In order to remove duplicates, I used the [difPy package](https://github.com/elisemercury/Duplicate-Image-Finder/wiki/difPy-Usage-Documentation) to select the highest resolution versions of each image. Finally, after choosing which version of each image to use and generating sketches, the images and sketches were resized to 256x256 with zero-padding to preserve aspect ratio. The sketches and images were then concatenated together horizontally, as specified in the [Tensorflow v2.x tutorial for pix2pix](https://www.tensorflow.org/tutorials/generative/pix2pix), for use in preprocessing for modeling.
 
@@ -156,16 +156,23 @@ The article that introduced the FID states that a minimum of 10,000 samples shou
 | :--: |
 | ![](./visualizations/results/good_results_large.png) |
 
-In these examples, both models performed well in recreating the original image from the low-detail sketch. Autopainter appears to outperform pix2pix in many instances due to the smoothing properties of its loss functions, which help reduce prevent jagged coloration, such as in the far left owl (although if one preferred an almost Van Gogh artstyle, pix2pix would be a great choice). The extra loss functions in autopainter also help reduce fitting to noise and "smudging" artifacts, such as in the second owl. Despite the earlier quantitative analysis suggesting that the optimal training epohcs appeared in the 80-140 range, there are still some interesting results in the images generated beyond that range. In particular, the far right owl was able to become darker in the autopainter model at 200 epochs, more closely apprixmating the ground-truth levels of brightness.
+In these examples, both models performed well in recreating the original image from the low-detail sketch. Autopainter appears to outperform pix2pix in many instances due to the smoothing properties of its loss functions, which help reduce prevent jagged coloration, such as in the far left owl (although if one preferred an almost Van Gogh art style, pix2pix would be a great choice). The extra loss functions in autopainter also help reduce fitting to noise and "smudging" artifacts, such as in the second owl. Despite the earlier quantitative analysis suggesting that the optimal training epochs appeared in the 80-140 range, there are still some interesting results in the images generated beyond that range. In particular, the far right owl was able to become darker in the autopainter model at 200 epochs, more closely approximating the ground-truth levels of brightness.
 
 | Bad Results |
 | :--: |
 | ![](./visualizations/results/bad_results_large.png) |
 
+While the models performed well overall, there were also many images where the model failed to produce a realistic sketch. These reasons can be broken down into a few main categories. The first category is when an image had too dark of a background, as in the cast of the far left owl. Even though I attempted to choose the correct version of images between inverted/regular, some images slipped through my selection process. The sketch for the far left mostly picked up the background, losing all of the features of the owl itself. The resulting image is impressive when compared to the sketch, but clearly falls short of the ground-truth image. The second category is when an image has high levels of fine detail with some spots of "heavy strokes" that are very dark. The second and third owls fall into this category, as they have high definition on their wings, but very dark wing borders and facial features, resulting in sketches with low detail on the bodies. The final category is when the owl is too low in detail and the rest of the image is too dark and has too much detail, as exemplified by the far right owl. The sketch for the far right owl mainly captures the black moon in the background, and fails to capture anything more than the faintest outline of the owl itself. With almost no information to work with, the models fail to produce reasonable results.
+
+Most of these failures to produce results can be attributed to bad starting images resulting in poor sketch creations, which could be prevented with more careful selection of images and further refinement of the sketch creation process.
+
 | Non-Owl Results |
 | :--: |
 | ![](./visualizations/results/non_owls_results_small.png) |
 
+In order to test the effectiveness of my models, I decided to test their generative abilities on non-owl images. As can be seen, the model has done a good job of reproducing the high-detail cat image on the left. It has not added feathers to the cat, which shows that, despite being trained specifically on owls, the models are actually performing edge and detail synthesis from low-detail images, not creating owls out of sketches. This is good, because it shows that the models can generalize beyond their training domain. Interestingly, the smoothing action of the autopainter model causes some issues in reproducing the cat picture, as it fails to capture any of the specular highlights present in the picture. Pix2pix does not have the same issue.
+
+The [owl-bear](https://forgottenrealms.fandom.com/wiki/Owlbear) (a Dungeons & Dragons monster with the body of a bear and head of an owl) in the middle produces middling results, as the sketch-generation process produced a very low detail sketch in comparison to the ground-truth image. For the person on the left, the results of both models are good, but once again, the smoothing action of the autopainter model causes it to struggle to reproduce the facial hair of the man, whereas pix2pix does a much better job. The pix2pix version does suffer from smudging noise artifacts which are absent in the autopainter model.
 
 
 
@@ -182,3 +189,5 @@ Please look at my full analysis in [Jupyter Notebooks](./notebooks) and code in 
 For any additional questions, please contact: **Joshua Gottlieb (joshuadavidgottlieb@gmail.com)**
 
 ## Repository Structure
+
+
